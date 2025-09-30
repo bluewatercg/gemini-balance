@@ -3,7 +3,6 @@
 import asyncio
 import datetime
 import json
-import re
 import time
 from copy import deepcopy
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union
@@ -26,14 +25,57 @@ from app.service.key.key_manager import KeyManager
 logger = get_openai_logger()
 
 
-def _has_media_parts(contents: List[Dict[str, Any]]) -> bool:
-    """判断消息是否包含图片、音频或视频部分 (inline_data)"""
-    for content in contents:
-        if content and "parts" in content and isinstance(content["parts"], list):
-            for part in content["parts"]:
-                if isinstance(part, dict) and "inline_data" in part:
+def _has_media_parts(messages: List[Dict[str, Any]]) -> bool:
+    """判断消息是否包含多媒体部分"""
+    for message in messages:
+        if "parts" in message:
+            for part in message["parts"]:
+                if "image_url" in part or "inline_data" in part:
                     return True
     return False
+
+
+def _clean_json_schema_properties(obj: Any) -> Any:
+    """清理JSON Schema中Gemini API不支持的字段"""
+    if not isinstance(obj, dict):
+        return obj
+
+    # Gemini API不支持的JSON Schema字段
+    unsupported_fields = {
+        "exclusiveMaximum",
+        "exclusiveMinimum",
+        "const",
+        "examples",
+        "contentEncoding",
+        "contentMediaType",
+        "if",
+        "then",
+        "else",
+        "allOf",
+        "anyOf",
+        "oneOf",
+        "not",
+        "definitions",
+        "$schema",
+        "$id",
+        "$ref",
+        "$comment",
+        "readOnly",
+        "writeOnly",
+    }
+
+    cleaned = {}
+    for key, value in obj.items():
+        if key in unsupported_fields:
+            continue
+        if isinstance(value, dict):
+            cleaned[key] = _clean_json_schema_properties(value)
+        elif isinstance(value, list):
+            cleaned[key] = [_clean_json_schema_properties(item) for item in value]
+        else:
+            cleaned[key] = value
+
+    return cleaned
 
 
 def _build_tools(
@@ -61,6 +103,10 @@ def _build_tools(
     if model.endswith("-search"):
         tool["googleSearch"] = {}
 
+    real_model = _get_real_model(model)
+    if real_model in settings.URL_CONTEXT_MODELS and settings.URL_CONTEXT_ENABLED:
+        tool["urlContext"] = {}
+
     # 将 request 中的 tools 合并到 tools 中
     if request.tools:
         function_declarations = []
@@ -76,6 +122,8 @@ def _build_tools(
                 ):
                     function.pop("parameters", None)
 
+                # 清理函数中的不支持字段
+                function = _clean_json_schema_properties(function)
                 function_declarations.append(function)
 
         if function_declarations:
@@ -83,7 +131,7 @@ def _build_tools(
             names, functions = set(), []
             for fc in function_declarations:
                 if fc.get("name") not in names:
-                    if fc.get("name")=="googleSearch":
+                    if fc.get("name") == "googleSearch":
                         # cherry开启内置搜索时，添加googleSearch工具
                         tool["googleSearch"] = {}
                     else:
@@ -97,8 +145,21 @@ def _build_tools(
     if tool.get("functionDeclarations"):
         tool.pop("googleSearch", None)
         tool.pop("codeExecution", None)
+        tool.pop("urlContext", None)
 
     return [tool] if tool else []
+
+
+def _get_real_model(model: str) -> str:
+    if model.endswith("-search"):
+        model = model[:-7]
+    if model.endswith("-image"):
+        model = model[:-6]
+    if model.endswith("-non-thinking"):
+        model = model[:-13]
+    if "-search" in model and "-non-thinking" in model:
+        model = model[:-20]
+    return model
 
 
 def _get_safety_settings(model: str) -> List[Dict[str, str]]:
@@ -111,6 +172,23 @@ def _get_safety_settings(model: str) -> List[Dict[str, str]]:
     if model == "gemini-2.0-flash-exp":
         return GEMINI_2_FLASH_EXP_SAFETY_SETTINGS
     return settings.SAFETY_SETTINGS
+
+
+def _validate_and_set_max_tokens(
+    payload: Dict[str, Any], max_tokens: Optional[int], logger_instance
+) -> None:
+    """验证并设置 max_tokens 参数"""
+    if max_tokens is None:
+        return
+
+    # 参数验证和处理
+    if max_tokens <= 0:
+        logger_instance.warning(
+            f"Invalid max_tokens value: {max_tokens}, will not set maxOutputTokens"
+        )
+        # 不设置 maxOutputTokens，让 Gemini API 使用默认值
+    else:
+        payload["generationConfig"]["maxOutputTokens"] = max_tokens
 
 
 def _build_payload(
@@ -130,16 +208,33 @@ def _build_payload(
         "tools": _build_tools(request, messages),
         "safetySettings": _get_safety_settings(request.model),
     }
-    if request.max_tokens is not None:
-        payload["generationConfig"]["maxOutputTokens"] = request.max_tokens
+
+    # 处理 max_tokens 参数
+    _validate_and_set_max_tokens(payload, request.max_tokens, logger)
+
+    # 处理 n 参数
+    if request.n is not None and request.n > 0:
+        payload["generationConfig"]["candidateCount"] = request.n
+
     if request.model.endswith("-image") or request.model.endswith("-image-generation"):
         payload["generationConfig"]["responseModalities"] = ["Text", "Image"]
+
     if request.model.endswith("-non-thinking"):
-        payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}
-    if request.model in settings.THINKING_BUDGET_MAP:
-        payload["generationConfig"]["thinkingConfig"] = {
-            "thinkingBudget": settings.THINKING_BUDGET_MAP.get(request.model, 1000)
-        }
+        if "gemini-2.5-pro" in request.model:
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 128}
+        else:
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}
+
+    elif _get_real_model(request.model) in settings.THINKING_BUDGET_MAP:
+        if settings.SHOW_THINKING_PROCESS:
+            payload["generationConfig"]["thinkingConfig"] = {
+                "thinkingBudget": settings.THINKING_BUDGET_MAP.get(request.model, 1000),
+                "includeThoughts": True,
+            }
+        else:
+            payload["generationConfig"]["thinkingConfig"] = {
+                "thinkingBudget": settings.THINKING_BUDGET_MAP.get(request.model, 1000)
+            }
 
     if (
         instruction
@@ -189,7 +284,9 @@ class OpenAIChatService:
         api_key: str,
     ) -> Union[Dict[str, Any], AsyncGenerator[str, None]]:
         """创建聊天完成"""
-        messages, instruction = self.message_converter.convert(request.messages)
+        messages, instruction = self.message_converter.convert(
+            request.messages, request.model
+        )
 
         payload = _build_payload(request, messages, instruction)
 
@@ -206,27 +303,55 @@ class OpenAIChatService:
         is_success = False
         status_code = None
         response = None
+
         try:
             response = await self.api_client.generate_content(payload, model, api_key)
             usage_metadata = response.get("usageMetadata", {})
             is_success = True
             status_code = 200
-            return self.response_handler.handle_response(
-                response,
-                model,
-                stream=False,
-                finish_reason="stop",
-                usage_metadata=usage_metadata,
-            )
+
+            # 尝试处理响应，捕获可能的响应处理异常
+            try:
+                result = self.response_handler.handle_response(
+                    response,
+                    model,
+                    stream=False,
+                    finish_reason="stop",
+                    usage_metadata=usage_metadata,
+                )
+                return result
+            except Exception as response_error:
+                logger.error(
+                    f"Response processing failed for model {model}: {str(response_error)}"
+                )
+
+                # 记录详细的错误信息
+                if "parts" in str(response_error):
+                    logger.error("Response structure issue - missing or invalid parts")
+                    if response.get("candidates"):
+                        candidate = response["candidates"][0]
+                        content = candidate.get("content", {})
+                        logger.error(f"Content structure: {content}")
+
+                # 重新抛出异常
+                raise response_error
+
         except Exception as e:
             is_success = False
-            error_log_msg = str(e)
-            logger.error(f"Normal API call failed with error: {error_log_msg}")
-            match = re.search(r"status code (\d+)", error_log_msg)
-            if match:
-                status_code = int(match.group(1))
-            else:
-                status_code = 500
+            status_code = e.args[0]
+            error_log_msg = e.args[1]
+            logger.error(f"API call failed for model {model}: {error_log_msg}")
+
+            # 特别记录 max_tokens 相关的错误
+            gen_config = payload.get("generationConfig", {})
+            if "maxOutputTokens" in gen_config:
+                logger.error(
+                    f"Request had maxOutputTokens: {gen_config['maxOutputTokens']}"
+                )
+
+            # 如果是响应处理错误，记录更多信息
+            if "parts" in error_log_msg:
+                logger.error("This is likely a response processing error")
 
             await add_error_log(
                 gemini_key=api_key,
@@ -234,12 +359,17 @@ class OpenAIChatService:
                 error_type="openai-chat-non-stream",
                 error_log=error_log_msg,
                 error_code=status_code,
-                request_msg=payload,
+                request_msg=payload if settings.ERROR_LOG_RECORD_REQUEST_BODY else None,
+                request_datetime=request_datetime,
             )
             raise e
         finally:
             end_time = time.perf_counter()
             latency_ms = int((end_time - start_time) * 1000)
+            logger.info(
+                f"Normal completion finished - Success: {is_success}, Latency: {latency_ms}ms"
+            )
+
             await add_request_log(
                 model_name=model,
                 api_key=api_key,
@@ -256,49 +386,44 @@ class OpenAIChatService:
         logger.info(
             f"Fake streaming enabled for model: {model}. Calling non-streaming endpoint."
         )
-        keep_sending_empty_data = True
 
-        async def send_empty_data_locally() -> AsyncGenerator[str, None]:
-            """定期发送空数据以保持连接"""
-            while keep_sending_empty_data:
-                await asyncio.sleep(settings.FAKE_STREAM_EMPTY_DATA_INTERVAL_SECONDS)
-                if keep_sending_empty_data:
-                    empty_chunk = self.response_handler.handle_response({}, model, stream=True, finish_reason='stop', usage_metadata=None)
-                    yield f"data: {json.dumps(empty_chunk)}\n\n"
-                    logger.debug("Sent empty data chunk for fake stream heartbeat.")
-
-        empty_data_generator = send_empty_data_locally()
         api_response_task = asyncio.create_task(
             self.api_client.generate_content(payload, model, api_key)
         )
 
+        i = 0
         try:
             while not api_response_task.done():
-                try:
-                    next_empty_chunk = await asyncio.wait_for(
-                        empty_data_generator.__anext__(), timeout=0.1
+                i = i + 1
+                """定期发送空数据以保持连接"""
+                if i >= settings.FAKE_STREAM_EMPTY_DATA_INTERVAL_SECONDS:
+                    i = 0
+                    empty_chunk = self.response_handler.handle_response(
+                        {},
+                        model,
+                        stream=True,
+                        finish_reason="stop",
+                        usage_metadata=None,
                     )
-                    yield next_empty_chunk
-                except asyncio.TimeoutError:
-                    pass
-                except (
-                    StopAsyncIteration
-                ):
-                    break
-
-            response = await api_response_task
+                    yield f"data: {json.dumps(empty_chunk)}\n\n"
+                    logger.debug("Sent empty data chunk for fake stream heartbeat.")
+                await asyncio.sleep(1)
         finally:
-            keep_sending_empty_data = False
+            response = await api_response_task
 
         if response and response.get("candidates"):
-            response = self.response_handler.handle_response(response, model, stream=True, finish_reason='stop', usage_metadata=response.get("usageMetadata", {}))
+            response = self.response_handler.handle_response(
+                response,
+                model,
+                stream=True,
+                finish_reason="stop",
+                usage_metadata=response.get("usageMetadata", {}),
+            )
             yield f"data: {json.dumps(response)}\n\n"
             logger.info(f"Sent full response content for fake stream: {model}")
         else:
             error_message = "Failed to get response from model"
-            if (
-                response and isinstance(response, dict) and response.get("error")
-            ):
+            if response and isinstance(response, dict) and response.get("error"):
                 error_details = response.get("error")
                 if isinstance(error_details, dict):
                     error_message = error_details.get("message", error_message)
@@ -306,7 +431,9 @@ class OpenAIChatService:
             logger.error(
                 f"No candidates or error in response for fake stream model {model}: {response}"
             )
-            error_chunk = self.response_handler.handle_response({}, model, stream=True, finish_reason='stop', usage_metadata=None)
+            error_chunk = self.response_handler.handle_response(
+                {}, model, stream=True, finish_reason="stop", usage_metadata=None
+            )
             yield f"data: {json.dumps(error_chunk)}\n\n"
 
     async def _real_stream_logic_impl(
@@ -334,7 +461,11 @@ class OpenAIChatService:
                     )
                     continue
                 openai_chunk = self.response_handler.handle_response(
-                    chunk, model, stream=True, finish_reason=None, usage_metadata=usage_metadata
+                    chunk,
+                    model,
+                    stream=True,
+                    finish_reason=None,
+                    usage_metadata=usage_metadata,
                 )
                 if openai_chunk:
                     text = self._extract_text_from_openai_chunk(openai_chunk)
@@ -348,7 +479,9 @@ class OpenAIChatService:
                         ):
                             yield optimized_chunk_data
                     else:
-                        if openai_chunk.get("choices") and openai_chunk["choices"][0].get("delta", {}).get("tool_calls"):
+                        if openai_chunk.get("choices") and openai_chunk["choices"][
+                            0
+                        ].get("delta", {}).get("tool_calls"):
                             tool_call_flag = True
 
                         yield f"data: {json.dumps(openai_chunk)}\n\n"
@@ -404,19 +537,11 @@ class OpenAIChatService:
             except Exception as e:
                 retries += 1
                 is_success = False
-                error_log_msg = str(e)
+                status_code = e.args[0]
+                error_log_msg = e.args[1]
                 logger.warning(
                     f"Streaming API call failed with error: {error_log_msg}. Attempt {retries} of {max_retries} with key {current_attempt_key}"
                 )
-
-                match = re.search(r"status code (\\d+)", error_log_msg)
-                if match:
-                    status_code = int(match.group(1))
-                else:
-                    if isinstance(e, asyncio.TimeoutError):
-                        status_code = 408
-                    else:
-                        status_code = 500
 
                 await add_error_log(
                     gemini_key=current_attempt_key,
@@ -424,7 +549,10 @@ class OpenAIChatService:
                     error_type="openai-chat-stream",
                     error_log=error_log_msg,
                     error_code=status_code,
-                    request_msg=payload,
+                    request_msg=(
+                        payload if settings.ERROR_LOG_RECORD_REQUEST_BODY else None
+                    ),
+                    request_datetime=request_datetime,
                 )
 
                 if self.key_manager:
@@ -440,7 +568,7 @@ class OpenAIChatService:
                         logger.error(
                             f"No valid API key available after {retries} retries, ceasing attempts for this request."
                         )
-                        break
+                        raise
                 else:
                     logger.error(
                         "KeyManager not available, cannot switch API key. Ceasing attempts for this request."
@@ -451,6 +579,7 @@ class OpenAIChatService:
                     logger.error(
                         f"Max retries ({max_retries}) reached for streaming model {model}."
                     )
+                    raise
             finally:
                 end_time = time.perf_counter()
                 latency_ms = int((end_time - start_time) * 1000)
@@ -462,13 +591,6 @@ class OpenAIChatService:
                     latency_ms=latency_ms,
                     request_time=request_datetime,
                 )
-
-        if not is_success:
-            logger.error(
-                f"Streaming failed permanently for model {model} after {retries} attempts."
-            )
-            yield f"data: {json.dumps({'error': f'Streaming failed after {retries} retries.'})}\n\n"
-            yield "data: [DONE]\n\n"
 
     async def create_image_chat_completion(
         self, request: ChatRequest, api_key: str
@@ -528,19 +650,23 @@ class OpenAIChatService:
             yield "data: [DONE]\n\n"
         except Exception as e:
             is_success = False
-            error_log_msg = f"Stream image completion failed for model {model}: {e}"
+            status_code = e.args[0]
+            error_log_msg = e.args[1]
             logger.error(error_log_msg)
-            status_code = 500
             await add_error_log(
                 gemini_key=api_key,
                 model_name=model,
                 error_type="openai-image-stream",
                 error_log=error_log_msg,
                 error_code=status_code,
-                request_msg={"image_data_truncated": image_data[:1000]},
+                request_msg=(
+                    {"image_data_truncated": image_data[:1000]}
+                    if settings.ERROR_LOG_RECORD_REQUEST_BODY
+                    else None
+                ),
+                request_datetime=request_datetime,
             )
-            yield f"data: {json.dumps({'error': error_log_msg})}\n\n"
-            yield "data: [DONE]\n\n"
+            raise
         finally:
             end_time = time.perf_counter()
             latency_ms = int((end_time - start_time) * 1000)
@@ -578,18 +704,23 @@ class OpenAIChatService:
             return result
         except Exception as e:
             is_success = False
-            error_log_msg = f"Normal image completion failed for model {model}: {e}"
+            status_code = e.args[0]
+            error_log_msg = e.args[1]
             logger.error(error_log_msg)
-            status_code = 500
             await add_error_log(
                 gemini_key=api_key,
                 model_name=model,
                 error_type="openai-image-non-stream",
                 error_log=error_log_msg,
                 error_code=status_code,
-                request_msg={"image_data_truncated": image_data[:1000]},
+                request_msg=(
+                    {"image_data_truncated": image_data[:1000]}
+                    if settings.ERROR_LOG_RECORD_REQUEST_BODY
+                    else None
+                ),
+                request_datetime=request_datetime,
             )
-            raise e
+            raise
         finally:
             end_time = time.perf_counter()
             latency_ms = int((end_time - start_time) * 1000)

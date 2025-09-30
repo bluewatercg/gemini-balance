@@ -83,25 +83,27 @@ endblock %} {% block head_extra_styles %}
     outline: none !important; /* 确保没有outline */
   }
 
-  /* 对于在包装器内的输入框，移除边框 */
-  .flex.items-center .form-input-themed,
+  /* 对于在数组容器内的输入框，移除边框 */
   .array-container .form-input-themed {
-    border: none !important; /* 在包装器内的输入框移除边框 */
+    border: none !important; /* 在数组容器内的输入框移除边框 */
   }
 
-  .flex.items-center .form-input-themed:focus,
   .array-container .form-input-themed:focus {
     border: none !important; /* 确保focus时也没有边框 */
   }
 
+  /* 为独立的模型选择输入框保留边框 */
+  .flex.items-center .form-input-themed {
+    border: 1px solid rgba(0, 0, 0, 0.12) !important; /* 保留边框 */
+  }
+
+  .flex.items-center .form-input-themed:focus {
+    border-color: #3b82f6 !important; /* focus时改变边框颜色 */
+  }
+
   /* Theming for select fields - 改进下拉框样式 */
   .form-select-themed {
-    background-color: rgba(
-      255,
-      255,
-      255,
-      0.95
-    ) !important; /* 白色背景 */
+    background-color: rgba(255, 255, 255, 0.95) !important; /* 白色背景 */
     border: 1px solid rgba(0, 0, 0, 0.12) !important; /* 灰色边框 */
     color: #374151 !important; /* gray-700 文字颜色 */
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important; /* 灰色箭头 */
@@ -124,7 +126,12 @@ endblock %} {% block head_extra_styles %}
   }
 
   .form-select-themed option {
-    background-color: rgba(255, 255, 255, 0.98) !important; /* white background */
+    background-color: rgba(
+      255,
+      255,
+      255,
+      0.98
+    ) !important; /* white background */
     color: #374151 !important; /* gray-700 */
     padding: 8px !important;
   }
@@ -141,22 +148,42 @@ endblock %} {% block head_extra_styles %}
   }
 
   #LOG_LEVEL option[value="INFO"] {
-    background-color: rgba(249, 250, 251, 0.98) !important; /* gray-50 浅灰背景 */
+    background-color: rgba(
+      249,
+      250,
+      251,
+      0.98
+    ) !important; /* gray-50 浅灰背景 */
     color: #374151 !important; /* gray-700 深灰色文字 */
   }
 
   #LOG_LEVEL option[value="WARNING"] {
-    background-color: rgba(243, 244, 246, 0.98) !important; /* gray-100 稍深灰背景 */
+    background-color: rgba(
+      243,
+      244,
+      246,
+      0.98
+    ) !important; /* gray-100 稍深灰背景 */
     color: #374151 !important; /* gray-700 深灰色文字 */
   }
 
   #LOG_LEVEL option[value="ERROR"] {
-    background-color: rgba(229, 231, 235, 0.98) !important; /* gray-200 中灰背景 */
+    background-color: rgba(
+      229,
+      231,
+      235,
+      0.98
+    ) !important; /* gray-200 中灰背景 */
     color: #374151 !important; /* gray-700 深灰色文字 */
   }
 
   #LOG_LEVEL option[value="CRITICAL"] {
-    background-color: rgba(209, 213, 219, 0.98) !important; /* gray-300 深灰背景 */
+    background-color: rgba(
+      209,
+      213,
+      219,
+      0.98
+    ) !important; /* gray-300 深灰背景 */
     color: #374151 !important; /* gray-700 深灰色文字 */
   }
 
@@ -228,7 +255,12 @@ endblock %} {% block head_extra_styles %}
   }
 
   .generate-btn:hover {
-    background-color: rgba(59, 130, 246, 0.2) !important; /* blue-500 more opaque */
+    background-color: rgba(
+      59,
+      130,
+      246,
+      0.2
+    ) !important; /* blue-500 more opaque */
     color: #1d4ed8 !important; /* blue-700 */
     box-shadow: 0 0 8px rgba(59, 130, 246, 0.3) !important;
   }
@@ -302,36 +334,47 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Override all violet/purple buttons to light blue */
-  .bg-violet-600, button.bg-violet-600 {
+  .bg-violet-600,
+  button.bg-violet-600 {
     background-color: #3b82f6 !important; /* blue-500 - light blue */
   }
 
-  .bg-violet-600:hover, button.bg-violet-600:hover,
+  .bg-violet-600:hover,
+  button.bg-violet-600:hover,
   .hover\\:bg-violet-700:hover {
     background-color: #2563eb !important; /* blue-600 - darker light blue */
   }
 
   /* Override blue buttons to light blue */
-  .bg-blue-600, button.bg-blue-600 {
+  .bg-blue-600,
+  button.bg-blue-600 {
     background-color: #3b82f6 !important; /* blue-500 - light blue */
   }
 
-  .bg-blue-600:hover, button.bg-blue-600:hover,
+  .bg-blue-600:hover,
+  button.bg-blue-600:hover,
   .hover\\:bg-blue-700:hover {
     background-color: #2563eb !important; /* blue-600 - darker light blue */
   }
 
   /* Override red buttons to bright light red */
-  .bg-red-600, button.bg-red-600,
-  .bg-red-700, button.bg-red-700,
-  .bg-red-800, button.bg-red-800 {
+  .bg-red-600,
+  button.bg-red-600,
+  .bg-red-700,
+  button.bg-red-700,
+  .bg-red-800,
+  button.bg-red-800 {
     background-color: #f87171 !important; /* red-400 - bright light red */
   }
 
-  .bg-red-600:hover, button.bg-red-600:hover,
-  .bg-red-700:hover, button.bg-red-700:hover,
-  .bg-red-800:hover, button.bg-red-800:hover,
-  .hover\\:bg-red-700:hover, .hover\\:bg-red-800:hover {
+  .bg-red-600:hover,
+  button.bg-red-600:hover,
+  .bg-red-700:hover,
+  button.bg-red-700:hover,
+  .bg-red-800:hover,
+  button.bg-red-800:hover,
+  .hover\\:bg-red-700:hover,
+  .hover\\:bg-red-800:hover {
     background-color: #ef4444 !important; /* red-500 - darker bright light red */
   }
 
@@ -349,7 +392,8 @@ endblock %} {% block head_extra_styles %}
   button.tab-btn.active {
     background-color: #3b82f6 !important; /* blue-500 */
     color: #ffffff !important; /* 确保白色文字 */
-    box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4), 0 2px 6px -1px rgba(59, 130, 246, 0.2) !important; /* 蓝色阴影 */
+    box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4),
+      0 2px 6px -1px rgba(59, 130, 246, 0.2) !important; /* 蓝色阴影 */
     transform: translateY(-2px) !important; /* 更明显的上移效果 */
     border: 2px solid #2563eb !important; /* blue-600 边框 */
     font-weight: 600 !important; /* 加粗字体 */
@@ -388,7 +432,8 @@ endblock %} {% block head_extra_styles %}
     background-color: #3b82f6 !important;
     color: #ffffff !important;
     border: 2px solid #2563eb !important;
-    box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4), 0 2px 6px -1px rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4),
+      0 2px 6px -1px rgba(59, 130, 246, 0.2) !important;
     transform: translateY(-2px) !important;
     font-weight: 600 !important;
   }
@@ -409,7 +454,8 @@ endblock %} {% block head_extra_styles %}
     background-color: rgba(255, 255, 255, 0.98) !important;
     color: #374151 !important; /* gray-700 */
     border-color: rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
   }
 
   /* Fix modal titles */
@@ -428,62 +474,78 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Fix modal body text */
-  .modal p, .modal label, .modal span {
+  .modal p,
+  .modal label,
+  .modal span {
     color: #374151 !important; /* gray-700 */
   }
 
   /* Fix modal textarea and input styling */
-  .modal textarea, .modal input {
+  .modal textarea,
+  .modal input {
     background-color: rgba(255, 255, 255, 0.95) !important;
     color: #374151 !important; /* gray-700 */
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
   }
 
-  .modal textarea:focus, .modal input:focus {
+  .modal textarea:focus,
+  .modal input:focus {
     border-color: #3b82f6 !important; /* blue-500 */
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
   }
 
   /* Fix modal button styling */
-  .modal .bg-violet-600, .modal button.bg-violet-600 {
+  .modal .bg-violet-600,
+  .modal button.bg-violet-600 {
     background-color: #3b82f6 !important; /* blue-500 - light blue */
     color: #ffffff !important;
     border: 1px solid #2563eb !important; /* blue-600 */
   }
 
-  .modal .bg-violet-600:hover, .modal button.bg-violet-600:hover {
+  .modal .bg-violet-600:hover,
+  .modal button.bg-violet-600:hover {
     background-color: #2563eb !important; /* blue-600 - darker light blue */
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
   }
 
   /* Fix modal blue button styling */
-  .modal .bg-blue-500, .modal button.bg-blue-500,
-  .modal .bg-blue-600, .modal button.bg-blue-600,
-  .modal .bg-blue-700, .modal button.bg-blue-700 {
+  .modal .bg-blue-500,
+  .modal button.bg-blue-500,
+  .modal .bg-blue-600,
+  .modal button.bg-blue-600,
+  .modal .bg-blue-700,
+  .modal button.bg-blue-700 {
     background-color: #3b82f6 !important; /* blue-500 - light blue */
     color: #ffffff !important;
     border: 1px solid #2563eb !important; /* blue-600 */
   }
 
-  .modal .bg-blue-500:hover, .modal button.bg-blue-500:hover,
-  .modal .bg-blue-600:hover, .modal button.bg-blue-600:hover,
-  .modal .bg-blue-700:hover, .modal button.bg-blue-700:hover {
+  .modal .bg-blue-500:hover,
+  .modal button.bg-blue-500:hover,
+  .modal .bg-blue-600:hover,
+  .modal button.bg-blue-600:hover,
+  .modal .bg-blue-700:hover,
+  .modal button.bg-blue-700:hover {
     background-color: #2563eb !important; /* blue-600 - darker light blue */
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
   }
 
   /* Fix modal cancel/secondary buttons */
-  .modal .bg-gray-500, .modal button.bg-gray-500,
-  .modal .bg-gray-600, .modal button.bg-gray-600 {
+  .modal .bg-gray-500,
+  .modal button.bg-gray-500,
+  .modal .bg-gray-600,
+  .modal button.bg-gray-600 {
     background-color: #e5e7eb !important; /* gray-200 - light gray */
     color: #374151 !important; /* gray-700 - dark text for contrast */
     border: 1px solid #d1d5db !important; /* gray-300 */
   }
 
-  .modal .bg-gray-500:hover, .modal button.bg-gray-500:hover,
-  .modal .bg-gray-600:hover, .modal button.bg-gray-600:hover {
+  .modal .bg-gray-500:hover,
+  .modal button.bg-gray-500:hover,
+  .modal .bg-gray-600:hover,
+  .modal button.bg-gray-600:hover {
     background-color: #d1d5db !important; /* gray-300 - darker light gray */
     color: #374151 !important; /* gray-700 - dark text for contrast */
     transform: translateY(-1px) !important;
@@ -491,17 +553,23 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Fix modal red/danger buttons */
-  .modal .bg-red-500, .modal button.bg-red-500,
-  .modal .bg-red-600, .modal button.bg-red-600,
-  .modal .bg-red-700, .modal button.bg-red-700 {
+  .modal .bg-red-500,
+  .modal button.bg-red-500,
+  .modal .bg-red-600,
+  .modal button.bg-red-600,
+  .modal .bg-red-700,
+  .modal button.bg-red-700 {
     background-color: #f87171 !important; /* red-400 - bright light red */
     color: #ffffff !important;
     border: 1px solid #ef4444 !important; /* red-500 */
   }
 
-  .modal .bg-red-500:hover, .modal button.bg-red-500:hover,
-  .modal .bg-red-600:hover, .modal button.bg-red-600:hover,
-  .modal .bg-red-700:hover, .modal button.bg-red-700:hover {
+  .modal .bg-red-500:hover,
+  .modal button.bg-red-500:hover,
+  .modal .bg-red-600:hover,
+  .modal button.bg-red-600:hover,
+  .modal .bg-red-700:hover,
+  .modal button.bg-red-700:hover {
     background-color: #ef4444 !important; /* red-500 - darker bright light red */
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
@@ -542,27 +610,54 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Comprehensive button text color fixes */
-  .bg-blue-500, .bg-blue-600, .bg-blue-700,
-  .bg-red-500, .bg-red-600, .bg-red-700, .bg-red-800,
-  .bg-green-500, .bg-green-600, .bg-green-700,
-  .bg-sky-500, .bg-sky-600, .bg-sky-700,
-  .bg-purple-500, .bg-purple-600, .bg-purple-700,
-  .bg-violet-500, .bg-violet-600, .bg-violet-700 {
+  .bg-blue-500,
+  .bg-blue-600,
+  .bg-blue-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700,
+  .bg-red-800,
+  .bg-green-500,
+  .bg-green-600,
+  .bg-green-700,
+  .bg-sky-500,
+  .bg-sky-600,
+  .bg-sky-700,
+  .bg-purple-500,
+  .bg-purple-600,
+  .bg-purple-700,
+  .bg-violet-500,
+  .bg-violet-600,
+  .bg-violet-700 {
     color: #ffffff !important;
   }
 
   /* Ensure button children inherit white text */
-  .bg-blue-500 *, .bg-blue-600 *, .bg-blue-700 *,
-  .bg-red-500 *, .bg-red-600 *, .bg-red-700 *, .bg-red-800 *,
-  .bg-green-500 *, .bg-green-600 *, .bg-green-700 *,
-  .bg-sky-500 *, .bg-sky-600 *, .bg-sky-700 *,
-  .bg-purple-500 *, .bg-purple-600 *, .bg-purple-700 *,
-  .bg-violet-500 *, .bg-violet-600 *, .bg-violet-700 * {
+  .bg-blue-500 *,
+  .bg-blue-600 *,
+  .bg-blue-700 *,
+  .bg-red-500 *,
+  .bg-red-600 *,
+  .bg-red-700 *,
+  .bg-red-800 *,
+  .bg-green-500 *,
+  .bg-green-600 *,
+  .bg-green-700 *,
+  .bg-sky-500 *,
+  .bg-sky-600 *,
+  .bg-sky-700 *,
+  .bg-purple-500 *,
+  .bg-purple-600 *,
+  .bg-purple-700 *,
+  .bg-violet-500 *,
+  .bg-violet-600 *,
+  .bg-violet-700 * {
     color: inherit !important;
   }
 
   /* Fix page title gradient - comprehensive override */
-  h1.text-transparent, .text-transparent.bg-clip-text,
+  h1.text-transparent,
+  .text-transparent.bg-clip-text,
   .bg-gradient-to-r.from-violet-400.to-pink-400 {
     background: none !important;
     color: #1f2937 !important; /* gray-800 - consistent with other pages */
@@ -579,15 +674,24 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Ensure all violet/purple colors are converted to blue theme */
-  .text-violet-300, .text-violet-400, .text-violet-100 {
+  .text-violet-300,
+  .text-violet-400,
+  .text-violet-100 {
     color: #3b82f6 !important; /* blue-500 */
   }
 
-  .border-violet-300, .border-violet-400 {
-    border-color: rgba(59, 130, 246, 0.3) !important; /* blue-500 with opacity */
+  .border-violet-300,
+  .border-violet-400 {
+    border-color: rgba(
+      59,
+      130,
+      246,
+      0.3
+    ) !important; /* blue-500 with opacity */
   }
 
-  .hover\\:text-violet-400:hover, .hover\\:text-violet-100:hover {
+  .hover\\:text-violet-400:hover,
+  .hover\\:text-violet-100:hover {
     color: #2563eb !important; /* blue-600 */
   }
 
@@ -613,7 +717,9 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Even more specific selector targeting the exact auth token wrapper */
-  .mb-6 .flex.items-center div.flex.items-center.flex-grow.border.rounded-md:focus-within {
+  .mb-6
+    .flex.items-center
+    div.flex.items-center.flex-grow.border.rounded-md:focus-within {
     border-color: #3b82f6 !important; /* blue-500 */
   }
 
@@ -625,7 +731,12 @@ endblock %} {% block head_extra_styles %}
 
   .focus\\:ring-primary-200:focus,
   .focus\\:ring-primary-300:focus {
-    --tw-ring-color: rgba(59, 130, 246, 0.2) !important; /* blue-500 with opacity */
+    --tw-ring-color: rgba(
+      59,
+      130,
+      246,
+      0.2
+    ) !important; /* blue-500 with opacity */
   }
 
   /* Fix select element styling */
@@ -645,15 +756,18 @@ endblock %} {% block head_extra_styles %}
   }
 
   /* Override any remaining primary colors */
-  .text-primary-600, .text-primary-500 {
+  .text-primary-600,
+  .text-primary-500 {
     color: #3b82f6 !important; /* blue-500 */
   }
 
-  .bg-primary-600, .bg-primary-500 {
+  .bg-primary-600,
+  .bg-primary-500 {
     background-color: #3b82f6 !important; /* blue-500 */
   }
 
-  .bg-primary-700:hover, .hover\\:bg-primary-700:hover {
+  .bg-primary-700:hover,
+  .hover\\:bg-primary-700:hover {
     background-color: #2563eb !important; /* blue-600 */
   }
 
@@ -693,11 +807,9 @@ endblock %} {% block head_extra_styles %}
       <i class="fas fa-sync-alt"></i>
     </button>
 
-    <h1
-      class="text-3xl font-extrabold text-center text-gray-800 mb-4"
-    >
+    <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-4">
       <img
-        src="/static/icons/logo.png"
+        src="{{ static_url('icons/logo.png') }}"
         alt="Gemini Balance Logo"
         class="h-9 inline-block align-middle mr-2"
       />
@@ -705,11 +817,13 @@ endblock %} {% block head_extra_styles %}
     </h1>
 
     <!-- Navigation Tabs -->
-    <div class="nav-buttons-container flex justify-center mb-8 overflow-x-auto gap-2">
+    <div
+      class="nav-buttons-container flex justify-center mb-8 overflow-x-auto gap-2"
+    >
       <a
         href="/config"
         class="main-nav-btn whitespace-nowrap flex items-center justify-center gap-2 px-6 py-3 font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-        style="background-color: #3b82f6 !important; color: #ffffff !important;"
+        style="background-color: #3b82f6 !important; color: #ffffff !important"
       >
         <i class="fas fa-cog"></i> 配置编辑
       </a>
@@ -734,49 +848,93 @@ endblock %} {% block head_extra_styles %}
       <button
         class="tab-btn active px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="api"
-        style="background-color: #3b82f6 !important; color: #ffffff !important; border: 2px solid #2563eb !important; box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4), 0 2px 6px -1px rgba(59, 130, 246, 0.2) !important; transform: translateY(-2px) !important; font-weight: 600 !important;"
+        style="
+          background-color: #3b82f6 !important;
+          color: #ffffff !important;
+          border: 2px solid #2563eb !important;
+          box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4),
+            0 2px 6px -1px rgba(59, 130, 246, 0.2) !important;
+          transform: translateY(-2px) !important;
+          font-weight: 600 !important;
+        "
       >
         API配置
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="model"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         模型配置
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="tts"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         TTS 配置
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="image"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         图像生成
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="stream"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         流式输出
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="scheduler"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         定时任务
       </button>
       <button
         class="tab-btn px-5 py-2 rounded-full font-medium text-sm transition-all duration-200"
         data-tab="logging"
-        style="background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important;"
+        style="
+          background-color: #f8fafc !important;
+          color: #64748b !important;
+          border: 2px solid #e2e8f0 !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+          font-weight: 500 !important;
+        "
       >
         日志配置
       </button>
@@ -797,8 +955,9 @@ endblock %} {% block head_extra_styles %}
         <!-- API密钥列表 -->
         <div class="mb-6">
           <label for="API_KEYS" class="block font-semibold mb-2 text-gray-800"
-            >API密钥列表</label
-          >
+            >API密钥列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Gemini API密钥列表，每行一个"></i>
+          </label>
           <div class="mb-2">
             <input
               type="search"
@@ -809,6 +968,29 @@ endblock %} {% block head_extra_styles %}
           </div>
           <div class="array-container" id="API_KEYS_container">
             <!-- 数组项将在这里动态添加 -->
+          </div>
+          <!-- API密钥分页控件 -->
+          <div id="apiKeyPagination" class="flex items-center justify-between mt-2 mb-2" style="display: none;">
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                id="apiKeyPrevBtn"
+                class="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
+              >
+                <i class="fas fa-chevron-left"></i> 上一页
+              </button>
+              <span id="apiKeyPageInfo" class="text-sm text-gray-600">第 1 页，共 1 页</span>
+              <button
+                type="button"
+                id="apiKeyNextBtn"
+                class="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
+              >
+                下一页 <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <div class="text-xs text-gray-500">
+              每页显示 20 个密钥
+            </div>
           </div>
           <div class="flex justify-end gap-2">
             <button
@@ -826,9 +1008,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加密钥
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >Gemini API密钥列表，每行一个</small
-          >
         </div>
 
         <!-- 允许的令牌列表 -->
@@ -836,8 +1015,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="ALLOWED_TOKENS"
             class="block font-semibold mb-2 text-gray-800"
-            >允许的令牌列表</label
-          >
+            >允许的令牌列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="允许访问API的令牌列表"></i>
+          </label>
           <div class="array-container" id="ALLOWED_TOKENS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -850,14 +1030,14 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加令牌
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">允许访问API的令牌列表</small>
         </div>
 
         <!-- 认证令牌 -->
         <div class="mb-6">
           <label for="AUTH_TOKEN" class="block font-semibold mb-2 text-gray-800"
-            >认证令牌</label
-          >
+            >认证令牌
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于API认证的令牌"></i>
+          </label>
           <div class="flex items-center">
             <div
               class="flex items-center flex-grow border rounded-md focus-within:border-blue-500"
@@ -881,14 +1061,14 @@ endblock %} {% block head_extra_styles %}
               </button>
             </div>
           </div>
-          <small class="text-gray-500 mt-1 block">用于API认证的令牌</small>
         </div>
 
         <!-- API基础URL -->
         <div class="mb-6">
           <label for="BASE_URL" class="block font-semibold mb-2 text-gray-700"
-            >API基础URL</label
-          >
+            >API基础URL
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Gemini API的基础URL"></i>
+          </label>
           <input
             type="text"
             id="BASE_URL"
@@ -896,14 +1076,49 @@ endblock %} {% block head_extra_styles %}
             placeholder="https://generativelanguage.googleapis.com/v1beta"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">Gemini API的基础URL</small>
         </div>
- 
-        <!-- Vertex API密钥列表 -->
+
+        <!-- 自定义Headers -->
         <div class="mb-6">
-          <label for="VERTEX_API_KEYS" class="block font-semibold mb-2 text-gray-700"
-            >Vertex API密钥列表</label
+          <label
+            for="CUSTOM_HEADERS"
+            class="block font-semibold mb-2 text-gray-700"
+            >自定义Headers
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="在这里添加的键值对将被添加到所有出站API请求的Header中"></i>
+          </label>
+          <div
+            class="bg-white rounded-lg border border-gray-200 p-4 mb-2 space-y-3"
+            id="CUSTOM_HEADERS_container"
+            style="
+              background-color: rgba(255, 255, 255, 0.95);
+              border: 1px solid rgba(0, 0, 0, 0.12);
+              color: #374151;
+            "
           >
+            <!-- 键值对将在这里动态添加 -->
+            <div class="text-gray-500 text-sm italic">
+              添加自定义请求头，例如 X-Api-Key: your-key
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+              id="addCustomHeaderBtn"
+            >
+              <i class="fas fa-plus"></i> 添加Header
+            </button>
+          </div>
+        </div>
+
+        <!-- Vertex Express API密钥列表 -->
+        <div class="mb-6">
+          <label
+            for="VERTEX_API_KEYS"
+            class="block font-semibold mb-2 text-gray-700"
+            >Vertex Express API密钥列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Vertex AI Platform API密钥列表。点击按钮可批量添加或删除"></i>
+          </label>
           <div class="array-container" id="VERTEX_API_KEYS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -923,16 +1138,16 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加Vertex密钥
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >Vertex AI Platform API密钥列表。点击按钮可批量添加或删除。</small
-          >
         </div>
- 
+
         <!-- Vertex Express API基础URL -->
         <div class="mb-6">
-          <label for="VERTEX_EXPRESS_BASE_URL" class="block font-semibold mb-2 text-gray-700"
-            >Vertex Express API基础URL</label
-          >
+          <label
+            for="VERTEX_EXPRESS_BASE_URL"
+            class="block font-semibold mb-2 text-gray-700"
+            >Vertex Express API基础URL
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Vertex Express API的基础URL"></i>
+          </label>
           <input
             type="text"
             id="VERTEX_EXPRESS_BASE_URL"
@@ -940,42 +1155,40 @@ endblock %} {% block head_extra_styles %}
             placeholder="https://aiplatform.googleapis.com/v1beta1/publishers/google/models"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">Vertex Express API的基础URL</small>
         </div>
         <!-- 智能路由配置 -->
         <div class="mb-6">
           <div class="flex items-center justify-between">
+            <label
+              for="URL_NORMALIZATION_ENABLED"
+              class="font-semibold text-gray-700"
+              >启用智能路由映射
+              <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="自动客户端请求的url拼接为正确格式（仅保证正常聊天，出现问题请关闭）"></i>
+            </label>
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="URL_NORMALIZATION_ENABLED"
+                id="URL_NORMALIZATION_ENABLED"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
               <label
-                      for="URL_NORMALIZATION_ENABLED"
-                      class="font-semibold text-gray-700"
-              >启用智能路由映射</label
-              >
-              <div
-                      class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
-                  <input
-                          type="checkbox"
-                          name="URL_NORMALIZATION_ENABLED"
-                          id="URL_NORMALIZATION_ENABLED"
-                          class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <label
-                          for="URL_NORMALIZATION_ENABLED"
-                          class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-                  ></label>
-              </div>
+                for="URL_NORMALIZATION_ENABLED"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
           </div>
-          <small class="text-gray-500 mt-1 block">
-            自动客户端请求的url拼接为正确格式（仅保证正常聊天，出现问题请关闭）
-          </small>
         </div>
         <!-- 最大失败次数 -->
         <div class="mb-6">
           <label
             for="MAX_FAILURES"
             class="block font-semibold mb-2 text-gray-700"
-            >最大失败次数</label
-          >
+            >最大失败次数
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="API密钥失败后标记为无效的次数"></i>
+          </label>
           <input
             type="number"
             id="MAX_FAILURES"
@@ -984,16 +1197,14 @@ endblock %} {% block head_extra_styles %}
             max="100"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block"
-            >API密钥失败后标记为无效的次数</small
-          >
         </div>
 
         <!-- 请求超时时间 -->
         <div class="mb-6">
           <label for="TIME_OUT" class="block font-semibold mb-2 text-gray-700"
-            >请求超时时间（秒）</label
-          >
+            >请求超时时间（秒）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="API请求的超时时间"></i>
+          </label>
           <input
             type="number"
             id="TIME_OUT"
@@ -1002,7 +1213,6 @@ endblock %} {% block head_extra_styles %}
             max="600"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">API请求的超时时间</small>
         </div>
 
         <!-- 最大重试次数 -->
@@ -1010,8 +1220,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="MAX_RETRIES"
             class="block font-semibold mb-2 text-gray-700"
-            >最大重试次数</label
-          >
+            >最大重试次数
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="API请求失败后的最大重试次数"></i>
+          </label>
           <input
             type="number"
             id="MAX_RETRIES"
@@ -1020,15 +1231,13 @@ endblock %} {% block head_extra_styles %}
             max="10"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block"
-            >API请求失败后的最大重试次数</small
-          >
         </div>
         <!-- 代理服务器列表 -->
         <div class="mb-6">
           <label for="PROXIES" class="block font-semibold mb-2 text-gray-700"
-            >代理服务器列表</label
-          >
+            >代理服务器列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="代理服务器列表，支持 http 和 socks5 格式，例如: http://user:pass@host:port 或 socks5://host:port。点击按钮可批量添加或删除"></i>
+          </label>
           <div class="array-container" id="PROXIES_container">
             <!-- 代理项将在这里动态添加 -->
           </div>
@@ -1042,44 +1251,44 @@ endblock %} {% block head_extra_styles %}
             </button>
             <button
               type="button"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+              id="checkAllProxiesBtn"
+            >
+              <i class="fas fa-globe"></i> 检测所有代理
+            </button>
+            <button
+              type="button"
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
               id="addProxyBtn"
             >
               <i class="fas fa-plus"></i> 添加代理
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >代理服务器列表，支持 http 和 socks5 格式，例如:
-            http://user:pass@host:port 或
-            socks5://host:port。点击按钮可批量添加或删除。</small
-          >
         </div>
         <!-- 代理使用策略 -->
         <div class="mb-6">
           <div class="flex items-center justify-between">
+            <label
+              for="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
+              class="font-semibold text-gray-700"
+              >是否开启固定代理策略
+              <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="开启后，对于每一个API_KEY将根据算法从代理列表中选取同一个代理IP，防止一个API_KEY同时被多个IP访问，也同时防止了一个IP访问了过多的API_KEY"></i>
+            </label>
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
+                id="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
               <label
-                      for="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
-                      class="font-semibold text-gray-700"
-              >是否开启固定代理策略</label
-              >
-              <div
-                      class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
-                  <input
-                          type="checkbox"
-                          name="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
-                          id="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
-                          class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <label
-                          for="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
-                          class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-                  ></label>
-              </div>
+                for="PROXIES_USE_CONSISTENCY_HASH_BY_API_KEY"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
           </div>
-          <small class="text-gray-500 mt-1 block"
-          >开启后，对于每一个API_KEY将根据算法从代理列表中选取同一个代理IP，防止一个API_KEY同时被多个IP访问，也同时防止了一个IP访问了过多的API_KEY。</small
-          >
         </div>
       </div>
 
@@ -1094,8 +1303,9 @@ endblock %} {% block head_extra_styles %}
         <!-- 测试模型 -->
         <div class="mb-6">
           <label for="TEST_MODEL" class="block font-semibold mb-2 text-gray-700"
-            >测试模型</label
-          >
+            >测试模型
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于测试API密钥的模型"></i>
+          </label>
           <div class="flex items-center gap-2">
             <input
               type="text"
@@ -1113,7 +1323,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-list-ul"></i>
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">用于测试API密钥的模型</small>
         </div>
 
         <!-- 图像模型列表 -->
@@ -1121,8 +1330,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="IMAGE_MODELS"
             class="block font-semibold mb-2 text-gray-700"
-            >图像模型列表</label
-          >
+            >图像模型列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="支持图像处理的模型列表"></i>
+          </label>
           <div class="array-container" id="IMAGE_MODELS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -1143,7 +1353,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加模型
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">支持图像处理的模型列表</small>
         </div>
 
         <!-- 搜索模型列表 -->
@@ -1151,8 +1360,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="SEARCH_MODELS"
             class="block font-semibold mb-2 text-gray-700"
-            >搜索模型列表</label
-          >
+            >搜索模型列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="支持搜索功能的模型列表"></i>
+          </label>
           <div class="array-container" id="SEARCH_MODELS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -1173,7 +1383,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加模型
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">支持搜索功能的模型列表</small>
         </div>
 
         <!-- 过滤模型列表 -->
@@ -1181,8 +1390,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="FILTERED_MODELS"
             class="block font-semibold mb-2 text-gray-700"
-            >过滤模型列表</label
-          >
+            >过滤模型列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="需要过滤的模型列表"></i>
+          </label>
           <div class="array-container" id="FILTERED_MODELS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -1203,29 +1413,85 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加模型
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">需要过滤的模型列表</small>
         </div>
 
         <!-- 启用代码执行工具 -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
+            <label
+              for="TOOLS_CODE_EXECUTION_ENABLED"
+              class="font-semibold text-gray-700"
+              >启用代码执行工具</label
+            >
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="TOOLS_CODE_EXECUTION_ENABLED"
+                id="TOOLS_CODE_EXECUTION_ENABLED"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
+              <label
+                for="TOOLS_CODE_EXECUTION_ENABLED"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
+          </div>
+          <div class="warning-text">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>启用代码执行工具与大多数工具调用冲突，不建议开启</span>
+          </div>
+        </div>
+
+        <!-- 启用网址上下文 -->
         <div class="mb-6 flex items-center justify-between">
-          <label
-            for="TOOLS_CODE_EXECUTION_ENABLED"
-            class="font-semibold text-gray-700"
-            >启用代码执行工具</label
+          <label for="URL_CONTEXT_ENABLED" class="font-semibold text-gray-700"
+            >启用网址上下文</label
           >
           <div
             class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
           >
             <input
               type="checkbox"
-              name="TOOLS_CODE_EXECUTION_ENABLED"
-              id="TOOLS_CODE_EXECUTION_ENABLED"
+              name="URL_CONTEXT_ENABLED"
+              id="URL_CONTEXT_ENABLED"
               class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
             />
             <label
-              for="TOOLS_CODE_EXECUTION_ENABLED"
+              for="URL_CONTEXT_ENABLED"
               class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
             ></label>
+          </div>
+        </div>
+
+        <!-- 网址上下文模型列表 -->
+        <div class="mb-6">
+          <label
+            for="URL_CONTEXT_MODELS"
+            class="block font-semibold mb-2 text-gray-700"
+            >网址上下文模型列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="支持网址上下文功能的模型列表"></i>
+          </label>
+          <div class="array-container" id="URL_CONTEXT_MODELS_container">
+            <!-- 数组项将在这里动态添加 -->
+          </div>
+          <div class="flex justify-end gap-2 mt-2">
+            <button
+              type="button"
+              title="从列表选择模型添加到下方"
+              class="model-helper-trigger-btn p-2 rounded-md text-violet-300 hover:bg-violet-700 transition-colors"
+              data-target-array-key="URL_CONTEXT_MODELS"
+            >
+              <i class="fas fa-list-ul"></i>
+            </button>
+            <button
+              type="button"
+              class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+              onclick="addArrayItem('URL_CONTEXT_MODELS')"
+            >
+              <i class="fas fa-plus"></i> 添加模型
+            </button>
           </div>
         </div>
 
@@ -1276,8 +1542,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="THINKING_MODELS"
             class="block font-semibold mb-2 text-gray-700"
-            >思考模型列表</label
-          >
+            >思考模型列表
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于思考过程的模型列表"></i>
+          </label>
           <div class="array-container" id="THINKING_MODELS_container">
             <!-- 数组项将在这里动态添加 -->
           </div>
@@ -1298,9 +1565,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加模型
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >用于"思考过程"的模型列表</small
-          >
         </div>
 
         <!-- 思考模型预算映射 -->
@@ -1308,8 +1572,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="THINKING_BUDGET_MAP"
             class="block font-semibold mb-2 text-gray-700"
-            >思考模型预算映射</label
-          >
+            >思考模型预算映射
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="为每个思考模型设置预算（-1为auto，最大值32767），此项与上方模型列表自动关联"></i>
+          </label>
           <div
             class="bg-white rounded-lg border border-gray-200 p-4 mb-2 space-y-3"
             id="THINKING_BUDGET_MAP_container"
@@ -1330,18 +1595,15 @@ endblock %} {% block head_extra_styles %}
                                 <i class="fas fa-plus"></i> 添加预算映射
                             </button>
                         </div> -->
-          <small class="text-gray-500 mt-1 block"
-            >为每个思考模型设置预算（整数，最大值
-            32767），此项与上方模型列表自动关联。</small
-          >
         </div>
         <!-- 安全设置 -->
         <div class="mb-6">
           <label
             for="SAFETY_SETTINGS"
             class="block font-semibold mb-2 text-gray-700"
-            >安全设置 (Safety Settings)</label
-          >
+            >安全设置 (Safety Settings)
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="配置模型的安全过滤级别，例如 HARM_CATEGORY_HARASSMENT: BLOCK_NONE"></i>
+          </label>
           <div
             class="bg-white rounded-lg border border-gray-200 p-4 mb-2 space-y-3"
             id="SAFETY_SETTINGS_container"
@@ -1365,10 +1627,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-plus"></i> 添加安全设置
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >配置模型的安全过滤级别，例如 HARM_CATEGORY_HARASSMENT:
-            BLOCK_NONE。</small
-          >
           <div class="warning-text">
             <i class="fas fa-exclamation-triangle"></i>
             <span
@@ -1377,8 +1635,8 @@ endblock %} {% block head_extra_styles %}
           </div>
         </div>
       </div>
- 
-       <!-- TTS配置 -->
+
+      <!-- TTS配置 -->
       <div class="config-section" id="tts-section">
         <h2
           class="text-xl font-bold mb-6 pb-3 border-b flex items-center gap-2 text-gray-800 border-violet-300 border-opacity-30"
@@ -1389,24 +1647,31 @@ endblock %} {% block head_extra_styles %}
         <!-- TTS 模型 -->
         <div class="mb-6">
           <label for="TTS_MODEL" class="block font-semibold mb-2 text-gray-700"
-            >TTS 模型</label
-          >
+            >TTS 模型
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于TTS的模型"></i>
+          </label>
           <select
             id="TTS_MODEL"
             name="TTS_MODEL"
             class="w-full px-4 py-3 rounded-lg form-select-themed"
           >
-            <option value="gemini-2.5-flash-preview-tts">gemini-2.5-flash-preview-tts</option>
-            <option value="gemini-2.5-pro-preview-tts">gemini-2.5-pro-preview-tts</option>
+            <option value="gemini-2.5-flash-preview-tts">
+              gemini-2.5-flash-preview-tts
+            </option>
+            <option value="gemini-2.5-pro-preview-tts">
+              gemini-2.5-pro-preview-tts
+            </option>
           </select>
-          <small class="text-gray-500 mt-1 block">用于TTS的模型</small>
         </div>
 
         <!-- TTS 语音名称 -->
         <div class="mb-6">
-          <label for="TTS_VOICE_NAME" class="block font-semibold mb-2 text-gray-700"
-            >TTS 语音名称</label
-          >
+          <label
+            for="TTS_VOICE_NAME"
+            class="block font-semibold mb-2 text-gray-700"
+            >TTS 语音名称
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="TTS 的语音名称，控制风格、语调、口音和节奏"></i>
+          </label>
           <select
             id="TTS_VOICE_NAME"
             name="TTS_VOICE_NAME"
@@ -1420,7 +1685,7 @@ endblock %} {% block head_extra_styles %}
             <option value="Leda">Leda (年轻)</option>
             <option value="Orus">Orus (坚定)</option>
             <option value="Aoede">Aoede (轻松)</option>
-            <option value="Callirhoe">Callirhoe (随和)</option>
+            <option value="Callirrhoe">Callirrhoe (随和)</option>
             <option value="Autonoe">Autonoe (明亮)</option>
             <option value="Enceladus">Enceladus (呼吸感)</option>
             <option value="Iapetus">Iapetus (清晰)</option>
@@ -1443,14 +1708,14 @@ endblock %} {% block head_extra_styles %}
             <option value="Sadaltager">Sadaltager (博学)</option>
             <option value="Sulafat">Sulafat (温暖)</option>
           </select>
-          <small class="text-gray-500 mt-1 block">TTS 的语音名称，控制风格、语调、口音和节奏</small>
         </div>
 
         <!-- TTS 语速 -->
         <div class="mb-6">
           <label for="TTS_SPEED" class="block font-semibold mb-2 text-gray-700"
-            >TTS 语速</label
-          >
+            >TTS 语速
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="选择 TTS 的语速"></i>
+          </label>
           <select
             id="TTS_SPEED"
             name="TTS_SPEED"
@@ -1460,13 +1725,12 @@ endblock %} {% block head_extra_styles %}
             <option value="normal">正常</option>
             <option value="fast">快</option>
           </select>
-          <small class="text-gray-500 mt-1 block">选择 TTS 的语速</small>
         </div>
       </div>
 
-       <!-- 图像生成相关配置 -->
-       <div class="config-section" id="image-section">
-         <h2
+      <!-- 图像生成相关配置 -->
+      <div class="config-section" id="image-section">
+        <h2
           class="text-xl font-bold mb-6 pb-3 border-b flex items-center gap-2 text-gray-800 border-violet-300 border-opacity-30"
         >
           <i class="fas fa-image text-violet-400"></i> 图像生成配置
@@ -1475,8 +1739,9 @@ endblock %} {% block head_extra_styles %}
         <!-- 付费API密钥 -->
         <div class="mb-6">
           <label for="PAID_KEY" class="block font-semibold mb-2 text-gray-700"
-            >付费API密钥</label
-          >
+            >付费API密钥
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于图像生成的付费API密钥"></i>
+          </label>
           <input
             type="text"
             id="PAID_KEY"
@@ -1484,9 +1749,6 @@ endblock %} {% block head_extra_styles %}
             placeholder="AIzaSyxxxxxxxxxxxxxxxxxxx"
             class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block"
-            >用于图像生成的付费API密钥</small
-          >
         </div>
 
         <!-- 图像生成模型 -->
@@ -1494,8 +1756,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="CREATE_IMAGE_MODEL"
             class="block font-semibold mb-2 text-gray-700"
-            >图像生成模型</label
-          >
+            >图像生成模型
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="用于图像生成的模型"></i>
+          </label>
           <div class="flex items-center gap-2">
             <input
               type="text"
@@ -1513,7 +1776,6 @@ endblock %} {% block head_extra_styles %}
               <i class="fas fa-list-ul"></i>
             </button>
           </div>
-          <small class="text-gray-500 mt-1 block">用于图像生成的模型</small>
         </div>
 
         <!-- 上传提供商 -->
@@ -1521,8 +1783,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="UPLOAD_PROVIDER"
             class="block font-semibold mb-2 text-gray-700"
-            >上传提供商</label
-          >
+            >上传提供商
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="图片上传服务提供商"></i>
+          </label>
           <select
             id="UPLOAD_PROVIDER"
             name="UPLOAD_PROVIDER"
@@ -1531,8 +1794,8 @@ endblock %} {% block head_extra_styles %}
             <option value="smms" selected>SM.MS</option>
             <option value="picgo">PicGo</option>
             <option value="cloudflare_imgbed">Cloudflare</option>
+            <option value="aliyun_oss">阿里云OSS</option>
           </select>
-          <small class="text-gray-500 mt-1 block">图片上传服务提供商</small>
         </div>
 
         <!-- SM.MS密钥 -->
@@ -1540,8 +1803,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="SMMS_SECRET_TOKEN"
             class="block font-semibold mb-2 text-gray-700"
-            >SM.MS密钥</label
-          >
+            >SM.MS密钥
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="SM.MS图床的密钥"></i>
+          </label>
           <input
             type="text"
             id="SMMS_SECRET_TOKEN"
@@ -1549,7 +1813,23 @@ endblock %} {% block head_extra_styles %}
             placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
             class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">SM.MS图床的密钥</small>
+        </div>
+
+        <!-- PicGo API URL -->
+        <div class="mb-6 provider-config" data-provider="picgo">
+          <label
+            for="PICGO_API_URL"
+            class="block font-semibold mb-2 text-gray-700"
+            >PicGo API地址
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="PicGo服务器的API地址，默认为 https://www.picgo.net/api/1/upload"></i>
+          </label>
+          <input
+            type="text"
+            id="PICGO_API_URL"
+            name="PICGO_API_URL"
+            placeholder="https://www.picgo.net/api/1/upload"
+            class="w-full px-4 py-3 rounded-lg form-input-themed"
+          />
         </div>
 
         <!-- PicGo API密钥 -->
@@ -1557,8 +1837,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="PICGO_API_KEY"
             class="block font-semibold mb-2 text-gray-700"
-            >PicGo API密钥</label
-          >
+            >PicGo API密钥
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="PicGo的API密钥"></i>
+          </label>
           <input
             type="text"
             id="PICGO_API_KEY"
@@ -1566,7 +1847,6 @@ endblock %} {% block head_extra_styles %}
             placeholder="xxxx"
             class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">PicGo的API密钥</small>
         </div>
 
         <!-- Cloudflare图床URL -->
@@ -1574,8 +1854,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="CLOUDFLARE_IMGBED_URL"
             class="block font-semibold mb-2 text-gray-700"
-            >Cloudflare图床URL</label
-          >
+            >Cloudflare图床URL
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Cloudflare图床的URL"></i>
+          </label>
           <input
             type="text"
             id="CLOUDFLARE_IMGBED_URL"
@@ -1583,7 +1864,6 @@ endblock %} {% block head_extra_styles %}
             placeholder="https://xxxxxxx.pages.dev/upload"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">Cloudflare图床的URL</small>
         </div>
 
         <!-- Cloudflare认证码 -->
@@ -1591,8 +1871,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="CLOUDFLARE_IMGBED_AUTH_CODE"
             class="block font-semibold mb-2 text-gray-700"
-            >Cloudflare认证码</label
-          >
+            >Cloudflare认证码
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Cloudflare图床的认证码"></i>
+          </label>
           <input
             type="text"
             id="CLOUDFLARE_IMGBED_AUTH_CODE"
@@ -1600,7 +1881,6 @@ endblock %} {% block head_extra_styles %}
             placeholder="xxxxxxxxx"
             class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">Cloudflare图床的认证码</small>
         </div>
 
         <!-- Cloudflare上传文件夹 -->
@@ -1608,8 +1888,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="CLOUDFLARE_IMGBED_UPLOAD_FOLDER"
             class="block font-semibold mb-2 text-gray-700"
-            >Cloudflare上传文件夹</label
-          >
+            >Cloudflare上传文件夹
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="Cloudflare图床的上传文件夹路径（可选）"></i>
+          </label>
           <input
             type="text"
             id="CLOUDFLARE_IMGBED_UPLOAD_FOLDER"
@@ -1617,7 +1898,109 @@ endblock %} {% block head_extra_styles %}
             placeholder=""
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">Cloudflare图床的上传文件夹路径（可选）</small>
+        </div>
+
+        <!-- 阿里云OSS配置 -->
+        <!-- OSS Endpoint -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_ENDPOINT"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS Endpoint
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的Endpoint地址"></i>
+          </label>
+          <input
+            type="text"
+            id="OSS_ENDPOINT"
+            name="OSS_ENDPOINT"
+            placeholder="oss-cn-shanghai.aliyuncs.com"
+            class="w-full px-4 py-3 rounded-lg form-input-themed"
+          />
+        </div>
+
+        <!-- OSS Access Key -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_ACCESS_KEY"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS Access Key
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的Access Key ID"></i>
+          </label>
+          <input
+            type="text"
+            id="OSS_ACCESS_KEY"
+            name="OSS_ACCESS_KEY"
+            placeholder="LTAI5txxxxxxxxxx"
+            class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
+          />
+        </div>
+
+        <!-- OSS Access Key Secret -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_ACCESS_KEY_SECRET"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS Access Key Secret
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的Access Key Secret"></i>
+          </label>
+          <input
+            type="password"
+            id="OSS_ACCESS_KEY_SECRET"
+            name="OSS_ACCESS_KEY_SECRET"
+            placeholder="yXxxxxxxxxxxxx"
+            class="w-full px-4 py-3 rounded-lg sensitive-input form-input-themed"
+          />
+        </div>
+
+        <!-- OSS Bucket Name -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_BUCKET_NAME"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS Bucket名称
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的Bucket名称"></i>
+          </label>
+          <input
+            type="text"
+            id="OSS_BUCKET_NAME"
+            name="OSS_BUCKET_NAME"
+            placeholder="your-bucket-name"
+            class="w-full px-4 py-3 rounded-lg form-input-themed"
+          />
+        </div>
+
+        <!-- OSS Region -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_REGION"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS Region
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的Region区域"></i>
+          </label>
+          <input
+            type="text"
+            id="OSS_REGION"
+            name="OSS_REGION"
+            placeholder="cn-shanghai"
+            class="w-full px-4 py-3 rounded-lg form-input-themed"
+          />
+        </div>
+
+        <!-- OSS Internal Endpoint (可选) -->
+        <div class="mb-6 provider-config" data-provider="aliyun_oss">
+          <label
+            for="OSS_ENDPOINT_INNER"
+            class="block font-semibold mb-2 text-gray-700"
+            >OSS内网Endpoint（可选）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="阿里云OSS的内网Endpoint地址（可选）"></i>
+          </label>
+          <input
+            type="text"
+            id="OSS_ENDPOINT_INNER"
+            name="OSS_ENDPOINT_INNER"
+            placeholder="oss-cn-shanghai-internal.aliyuncs.com"
+            class="w-full px-4 py-3 rounded-lg form-input-themed"
+          />
         </div>
       </div>
 
@@ -1630,25 +2013,31 @@ endblock %} {% block head_extra_styles %}
         </h2>
 
         <!-- 启用流式输出优化 -->
-        <div class="mb-6 flex items-center justify-between">
-          <label
-            for="STREAM_OPTIMIZER_ENABLED"
-            class="font-semibold text-gray-700"
-            >启用流式输出优化</label
-          >
-          <div
-            class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-          >
-            <input
-              type="checkbox"
-              name="STREAM_OPTIMIZER_ENABLED"
-              id="STREAM_OPTIMIZER_ENABLED"
-              class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-            />
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
             <label
               for="STREAM_OPTIMIZER_ENABLED"
-              class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-            ></label>
+              class="font-semibold text-gray-700"
+              >启用流式输出优化</label
+            >
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="STREAM_OPTIMIZER_ENABLED"
+                id="STREAM_OPTIMIZER_ENABLED"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
+              <label
+                for="STREAM_OPTIMIZER_ENABLED"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
+          </div>
+          <div class="warning-text">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>开启流式优化会在一定程度上减速返回，不建议开启</span>
           </div>
         </div>
 
@@ -1657,8 +2046,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="STREAM_MIN_DELAY"
             class="block font-semibold mb-2 text-gray-700"
-            >最小延迟（秒）</label
-          >
+            >最小延迟（秒）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="流式输出的最小延迟时间"></i>
+          </label>
           <input
             type="number"
             id="STREAM_MIN_DELAY"
@@ -1668,7 +2058,6 @@ endblock %} {% block head_extra_styles %}
             step="0.001"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">流式输出的最小延迟时间</small>
         </div>
 
         <!-- 最大延迟 -->
@@ -1676,8 +2065,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="STREAM_MAX_DELAY"
             class="block font-semibold mb-2 text-gray-700"
-            >最大延迟（秒）</label
-          >
+            >最大延迟（秒）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="流式输出的最大延迟时间"></i>
+          </label>
           <input
             type="number"
             id="STREAM_MAX_DELAY"
@@ -1687,7 +2077,6 @@ endblock %} {% block head_extra_styles %}
             step="0.001"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">流式输出的最大延迟时间</small>
         </div>
 
         <!-- 短文本阈值 -->
@@ -1695,8 +2084,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="STREAM_SHORT_TEXT_THRESHOLD"
             class="block font-semibold mb-2 text-gray-700"
-            >短文本阈值</label
-          >
+            >短文本阈值
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="短文本的字符阈值"></i>
+          </label>
           <input
             type="number"
             id="STREAM_SHORT_TEXT_THRESHOLD"
@@ -1705,7 +2095,6 @@ endblock %} {% block head_extra_styles %}
             max="100"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">短文本的字符阈值</small>
         </div>
 
         <!-- 长文本阈值 -->
@@ -1713,8 +2102,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="STREAM_LONG_TEXT_THRESHOLD"
             class="block font-semibold mb-2 text-gray-700"
-            >长文本阈值</label
-          >
+            >长文本阈值
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="长文本的字符阈值"></i>
+          </label>
           <input
             type="number"
             id="STREAM_LONG_TEXT_THRESHOLD"
@@ -1723,7 +2113,6 @@ endblock %} {% block head_extra_styles %}
             max="1000"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">长文本的字符阈值</small>
         </div>
 
         <!-- 分块大小 -->
@@ -1731,8 +2120,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="STREAM_CHUNK_SIZE"
             class="block font-semibold mb-2 text-gray-700"
-            >分块大小</label
-          >
+            >分块大小
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="流式输出的分块大小"></i>
+          </label>
           <input
             type="number"
             id="STREAM_CHUNK_SIZE"
@@ -1741,7 +2131,6 @@ endblock %} {% block head_extra_styles %}
             max="100"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block">流式输出的分块大小</small>
         </div>
 
         <!-- Fake Streaming Configuration -->
@@ -1755,8 +2144,9 @@ endblock %} {% block head_extra_styles %}
         <!-- 启用假流式输出 -->
         <div class="mb-6 flex items-center justify-between">
           <label for="FAKE_STREAM_ENABLED" class="font-semibold text-gray-700"
-            >启用假流式输出</label
-          >
+            >启用假流式输出
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="当启用时，将调用非流式接口，并在等待响应期间发送空数据以维持连接"></i>
+          </label>
           <div
             class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
           >
@@ -1772,17 +2162,15 @@ endblock %} {% block head_extra_styles %}
             ></label>
           </div>
         </div>
-        <small class="text-gray-500 mt-1 block mb-4"
-          >当启用时，将调用非流式接口，并在等待响应期间发送空数据以维持连接。</small
-        >
 
         <!-- 假流式发送空数据的间隔时间 -->
         <div class="mb-6">
           <label
             for="FAKE_STREAM_EMPTY_DATA_INTERVAL_SECONDS"
             class="block font-semibold mb-2 text-gray-700"
-            >假流式空数据发送间隔（秒）</label
-          >
+            >假流式空数据发送间隔（秒）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="在启用假流式输出时，向客户端发送空数据以维持连接状态的时间间隔（建议 3-10 秒）"></i>
+          </label>
           <input
             type="number"
             id="FAKE_STREAM_EMPTY_DATA_INTERVAL_SECONDS"
@@ -1792,10 +2180,6 @@ endblock %} {% block head_extra_styles %}
             step="1"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block"
-            >在启用假流式输出时，向客户端发送空数据以维持连接状态的时间间隔（建议
-            3-10 秒）。</small
-          >
         </div>
       </div>
 
@@ -1812,36 +2196,19 @@ endblock %} {% block head_extra_styles %}
           <label
             for="CHECK_INTERVAL_HOURS"
             class="block font-semibold mb-2 text-gray-700"
-            >检查间隔（小时）</label
-          >
+            >检查间隔（小时）
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="定时检查密钥状态的间隔时间（单位：小时），设置为0时不进行定时检查"></i>
+          </label>
           <input
             type="number"
             id="CHECK_INTERVAL_HOURS"
             name="CHECK_INTERVAL_HOURS"
-            min="1"
+            min="0"
+            step="1"
             class="w-full px-4 py-3 rounded-lg form-input-themed"
           />
-          <small class="text-gray-500 mt-1 block"
-            >定时检查密钥状态的间隔时间（单位：小时）</small
-          >
         </div>
 
-        <!-- 时区 -->
-        <div class="mb-6">
-          <label for="TIMEZONE" class="block font-semibold mb-2 text-gray-700"
-            >时区</label
-          >
-          <input
-            type="text"
-            id="TIMEZONE"
-            name="TIMEZONE"
-            placeholder="例如: Asia/Shanghai"
-            class="w-full px-4 py-3 rounded-lg form-input-themed"
-          />
-          <small class="text-gray-500 mt-1 block"
-            >定时任务使用的时区，格式如 "Asia/Shanghai" 或 "UTC"</small
-          >
-        </div>
       </div>
 
       <!-- 日志配置 -->
@@ -1855,8 +2222,9 @@ endblock %} {% block head_extra_styles %}
         <!-- 日志级别 -->
         <div class="mb-6">
           <label for="LOG_LEVEL" class="block font-semibold mb-2 text-gray-700"
-            >日志级别</label
-          >
+            >日志级别
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="设置应用程序的日志记录详细程度"></i>
+          </label>
           <select
             id="LOG_LEVEL"
             name="LOG_LEVEL"
@@ -1868,9 +2236,32 @@ endblock %} {% block head_extra_styles %}
             <option value="ERROR">ERROR</option>
             <option value="CRITICAL">CRITICAL</option>
           </select>
-          <small class="text-gray-500 mt-1 block"
-            >设置应用程序的日志记录详细程度</small
-          >
+        </div>
+
+        <!-- 错误日志记录请求体 -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
+            <label
+              for="ERROR_LOG_RECORD_REQUEST_BODY"
+              class="font-semibold text-gray-700"
+              >错误日志记录请求体
+              <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="关闭可减少大量磁盘空间占用，默认关闭"></i>
+            </label>
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="ERROR_LOG_RECORD_REQUEST_BODY"
+                id="ERROR_LOG_RECORD_REQUEST_BODY"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
+              <label
+                for="ERROR_LOG_RECORD_REQUEST_BODY"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
+          </div>
         </div>
 
         <!-- 自动删除错误日志 -->
@@ -1879,8 +2270,9 @@ endblock %} {% block head_extra_styles %}
             <label
               for="AUTO_DELETE_ERROR_LOGS_ENABLED"
               class="font-semibold text-gray-700"
-              >是否开启自动删除错误日志</label
-            >
+              >是否开启自动删除错误日志
+              <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="开启后，将自动删除指定天数前的错误日志"></i>
+            </label>
             <div
               class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
             >
@@ -1896,9 +2288,6 @@ endblock %} {% block head_extra_styles %}
               ></label>
             </div>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >开启后，将自动删除指定天数前的错误日志。</small
-          >
         </div>
 
         <!-- 自动删除日志天数 -->
@@ -1906,8 +2295,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="AUTO_DELETE_ERROR_LOGS_DAYS"
             class="block font-semibold mb-2 text-gray-700"
-            >自动删除多少天前的错误日志</label
-          >
+            >自动删除多少天前的错误日志
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="选择自动删除错误日志的天数"></i>
+          </label>
           <select
             id="AUTO_DELETE_ERROR_LOGS_DAYS"
             name="AUTO_DELETE_ERROR_LOGS_DAYS"
@@ -1917,9 +2307,6 @@ endblock %} {% block head_extra_styles %}
             <option value="7">7 天</option>
             <option value="30">30 天</option>
           </select>
-          <small class="text-gray-500 mt-1 block"
-            >选择自动删除错误日志的天数。</small
-          >
         </div>
 
         <!-- 自动删除请求日志 -->
@@ -1928,8 +2315,9 @@ endblock %} {% block head_extra_styles %}
             <label
               for="AUTO_DELETE_REQUEST_LOGS_ENABLED"
               class="font-semibold text-gray-700"
-              >是否开启自动删除请求日志</label
-            >
+              >是否开启自动删除请求日志
+              <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="开启后，将自动删除指定天数前的请求日志"></i>
+            </label>
             <div
               class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
             >
@@ -1945,9 +2333,6 @@ endblock %} {% block head_extra_styles %}
               ></label>
             </div>
           </div>
-          <small class="text-gray-500 mt-1 block"
-            >开启后，将自动删除指定天数前的请求日志。</small
-          >
         </div>
 
         <!-- 自动删除请求日志天数 -->
@@ -1955,8 +2340,9 @@ endblock %} {% block head_extra_styles %}
           <label
             for="AUTO_DELETE_REQUEST_LOGS_DAYS"
             class="block font-semibold mb-2 text-gray-700"
-            >自动删除多少天前的请求日志</label
-          >
+            >自动删除多少天前的请求日志
+            <i class="fas fa-question-circle text-gray-400 ml-1 cursor-help" title="选择自动删除请求日志的天数"></i>
+          </label>
           <select
             id="AUTO_DELETE_REQUEST_LOGS_DAYS"
             name="AUTO_DELETE_REQUEST_LOGS_DAYS"
@@ -1966,19 +2352,21 @@ endblock %} {% block head_extra_styles %}
             <option value="7">7 天</option>
             <option value="30">30 天</option>
           </select>
-          <small class="text-gray-500 mt-1 block"
-            >选择自动删除请求日志的天数。</small
-          >
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-col md:flex-row justify-center gap-4 mt-8 pt-4 pb-2">
+      <div
+        class="flex flex-col md:flex-row justify-center gap-4 mt-8 pt-4 pb-2"
+      >
         <button
           type="button"
           id="saveBtn"
           class="action-btn text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
-          style="background-color: #3b82f6 !important; color: #ffffff !important;"
+          style="
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
+          "
         >
           <i class="fas fa-save"></i> 保存配置
         </button>
@@ -1986,7 +2374,10 @@ endblock %} {% block head_extra_styles %}
           type="button"
           id="resetBtn"
           class="action-btn bg-gradient-to-r from-gray-600 to-gray-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
-          style="background-color: #6b7280 !important; color: #ffffff !important;"
+          style="
+            background-color: #6b7280 !important;
+            color: #ffffff !important;
+          "
         >
           <i class="fas fa-undo"></i> 重置配置
         </button>
@@ -2247,8 +2638,8 @@ endblock %} {% block head_extra_styles %}
     </div>
   </div>
 </div>
- 
-<!-- Vertex API Key Add Modal -->
+
+<!-- Vertex Express API Key Add Modal -->
 <div id="vertexApiKeyModal" class="modal">
   <div
     class="w-full max-w-lg mx-auto rounded-2xl shadow-2xl overflow-hidden animate-fade-in"
@@ -2260,7 +2651,9 @@ endblock %} {% block head_extra_styles %}
   >
     <div class="p-6">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-800">批量添加 Vertex API 密钥</h2>
+        <h2 class="text-xl font-bold text-gray-800">
+          批量添加 Vertex Express API 密钥
+        </h2>
         <button
           id="closeVertexApiKeyModalBtn"
           class="text-gray-300 hover:text-gray-800 text-xl"
@@ -2269,12 +2662,13 @@ endblock %} {% block head_extra_styles %}
         </button>
       </div>
       <p class="text-gray-300 mb-4">
-        每行粘贴一个或多个密钥，将自动提取有效密钥 (格式: AQ.开头，共53位) 并去重。
+        每行粘贴一个或多个密钥，将自动提取有效密钥 (格式: AQ.开头，共53位)
+        并去重。
       </p>
       <textarea
         id="vertexApiKeyBulkInput"
         rows="10"
-        placeholder="在此处粘贴 Vertex API 密钥..."
+        placeholder="在此处粘贴 Vertex Express API 密钥..."
         class="w-full px-4 py-3 rounded-lg font-mono text-sm form-input-themed"
       ></textarea>
       <div class="flex justify-end gap-3 mt-6">
@@ -2296,8 +2690,8 @@ endblock %} {% block head_extra_styles %}
     </div>
   </div>
 </div>
- 
-<!-- Bulk Delete Vertex API Key Modal -->
+
+<!-- Bulk Delete Vertex Express API Key Modal -->
 <div id="bulkDeleteVertexApiKeyModal" class="modal">
   <div
     class="w-full max-w-lg mx-auto rounded-2xl shadow-2xl overflow-hidden animate-fade-in"
@@ -2309,7 +2703,9 @@ endblock %} {% block head_extra_styles %}
   >
     <div class="p-6">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-800">批量删除 Vertex API 密钥</h2>
+        <h2 class="text-xl font-bold text-gray-800">
+          批量删除 Vertex Express API 密钥
+        </h2>
         <button
           id="closeBulkDeleteVertexModalBtn"
           class="text-gray-300 hover:text-gray-800 text-xl"
@@ -2323,7 +2719,7 @@ endblock %} {% block head_extra_styles %}
       <textarea
         id="bulkDeleteVertexApiKeyInput"
         rows="10"
-        placeholder="在此处粘贴要删除的 Vertex API 密钥..."
+        placeholder="在此处粘贴要删除的 Vertex Express API 密钥..."
         class="w-full px-4 py-3 rounded-lg font-mono text-sm form-input-themed"
       ></textarea>
       <div class="flex justify-end gap-3 mt-6">
@@ -2345,7 +2741,85 @@ endblock %} {% block head_extra_styles %}
     </div>
   </div>
 </div>
- 
+
+<!-- Proxy Check Results Modal -->
+<div id="proxyCheckModal" class="modal">
+  <div
+    class="w-full max-w-4xl mx-auto rounded-2xl shadow-2xl overflow-hidden animate-fade-in"
+    style="
+      background-color: rgba(255, 255, 255, 0.98);
+      color: #374151;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    "
+  >
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800">代理检测结果</h2>
+        <button
+          id="closeProxyCheckModalBtn"
+          class="text-gray-300 hover:text-gray-800 text-xl"
+        >
+          &times;
+        </button>
+      </div>
+      
+      <!-- 检测状态和进度 -->
+      <div id="proxyCheckProgress" class="mb-4 hidden">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-sm text-gray-600">检测中...</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div id="progressBar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">
+          <span id="progressText">准备开始检测...</span>
+        </div>
+      </div>
+      
+      <!-- 检测结果概览 -->
+      <div id="proxyCheckSummary" class="mb-4 hidden">
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div class="text-2xl font-bold text-green-600" id="availableCount">0</div>
+            <div class="text-sm text-green-700">可用</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="text-2xl font-bold text-red-600" id="unavailableCount">0</div>
+            <div class="text-sm text-red-700">不可用</div>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="text-2xl font-bold text-blue-600" id="totalCount">0</div>
+            <div class="text-sm text-blue-700">总数</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 检测结果列表 -->
+      <div id="proxyCheckResults" class="space-y-2" style="max-height: 400px; overflow-y: auto;">
+        <!-- 检测结果将在这里动态添加 -->
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-6">
+        <button
+          type="button"
+          id="retryFailedProxiesBtn"
+          class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition hidden"
+        >
+          重试失败的代理
+        </button>
+        <button
+          type="button"
+          id="closeProxyCheckBtn"
+          class="bg-gray-500 bg-opacity-50 hover:bg-opacity-70 text-gray-200 px-6 py-2 rounded-lg font-medium transition"
+        >
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Model Helper Modal -->
 <div id="modelHelperModal" class="modal">
   <div
@@ -2396,7 +2870,7 @@ endblock %} {% block head_extra_styles %}
 </div>
 
 {% endblock %} {% block body_scripts %}
-<script src="/static/js/config_editor.js"></script>
+<script src="{{ static_url('js/config_editor.js') }}"></script>
 <!-- 增强下拉框样式和交互性 -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -2473,8 +2947,10 @@ endblock %} {% block head_extra_styles %}
       input.addEventListener("focus", function () {
         const parentItem = this.closest(".map-item");
         if (parentItem) {
-          parentItem.style.backgroundColor = "rgba(243, 244, 246, 1)"; /* gray-100 */
-          parentItem.style.borderColor = "rgba(59, 130, 246, 0.5)"; /* blue-500 */
+          parentItem.style.backgroundColor =
+            "rgba(243, 244, 246, 1)"; /* gray-100 */
+          parentItem.style.borderColor =
+            "rgba(59, 130, 246, 0.5)"; /* blue-500 */
         }
       });
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import delete, func, select
@@ -28,7 +28,7 @@ async def delete_old_error_logs():
         )
         return
 
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_to_keep)
+    cutoff_date = datetime.now() - timedelta(days=days_to_keep)
 
     logger.info(
         f"Attempting to delete error logs older than {days_to_keep} days (before {cutoff_date.strftime('%Y-%m-%d %H:%M:%S %Z')})."
@@ -116,6 +116,30 @@ async def process_get_error_log_details(log_id: int) -> Optional[Dict[str, Any]]
     except Exception as e:
         logger.error(
             f"Service error in process_get_error_log_details for ID {log_id}: {e}",
+            exc_info=True,
+        )
+        raise
+
+
+async def process_find_error_log_by_info(
+    gemini_key: str,
+    timestamp: datetime,
+    status_code: Optional[int] = None,
+    window_seconds: int = 100,
+) -> Optional[Dict[str, Any]]:
+    """
+    根据 key/状态码/时间窗口 查询最匹配的一条错误日志，未找到则返回 None。
+    """
+    try:
+        return await db_services.find_error_log_by_info(
+            gemini_key=gemini_key,
+            timestamp=timestamp,
+            status_code=status_code,
+            window_seconds=window_seconds,
+        )
+    except Exception as e:
+        logger.error(
+            f"Service error in process_find_error_log_by_info: {e}",
             exc_info=True,
         )
         raise

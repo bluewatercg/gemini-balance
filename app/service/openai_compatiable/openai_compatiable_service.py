@@ -1,7 +1,4 @@
-
 import datetime
-import json
-import re
 import time
 from typing import Any, AsyncGenerator, Dict, Union
 
@@ -11,11 +8,13 @@ from app.database.services import (
     add_request_log,
 )
 from app.domain.openai_models import ChatRequest, ImageGenerationRequest
+from app.log.logger import get_openai_compatible_logger
 from app.service.client.api_client import OpenaiApiClient
 from app.service.key.key_manager import KeyManager
-from app.log.logger import get_openai_compatible_logger
+from app.utils.helpers import redact_key_for_logging
 
 logger = get_openai_compatible_logger()
+
 
 class OpenAICompatiableService:
 
@@ -23,7 +22,7 @@ class OpenAICompatiableService:
         self.key_manager = key_manager
         self.base_url = base_url
         self.api_client = OpenaiApiClient(base_url, settings.TIME_OUT)
-        
+
     async def get_models(self, api_key: str) -> Dict[str, Any]:
         return await self.api_client.get_models(api_key)
 
@@ -36,10 +35,12 @@ class OpenAICompatiableService:
         request_dict = request.model_dump()
         # 移除值为null的
         request_dict = {k: v for k, v in request_dict.items() if v is not None}
-        del request_dict["top_k"] # 删除top_k参数，目前不支持该参数
+        del request_dict["top_k"]  # 删除top_k参数，目前不支持该参数
         if request.stream:
             return self._handle_stream_completion(request.model, request_dict, api_key)
-        return await self._handle_normal_completion(request.model, request_dict, api_key)
+        return await self._handle_normal_completion(
+            request.model, request_dict, api_key
+        )
 
     async def generate_images(
         self,
@@ -77,13 +78,9 @@ class OpenAICompatiableService:
             return response
         except Exception as e:
             is_success = False
-            error_log_msg = str(e)
+            status_code = e.args[0]
+            error_log_msg = e.args[1]
             logger.error(f"Normal API call failed with error: {error_log_msg}")
-            match = re.search(r"status code (\d+)", error_log_msg)
-            if match:
-                status_code = int(match.group(1))
-            else:
-                status_code = 500
 
             await add_error_log(
                 gemini_key=api_key,
@@ -91,7 +88,7 @@ class OpenAICompatiableService:
                 error_type="openai-compatiable-non-stream",
                 error_log=error_log_msg,
                 error_code=status_code,
-                request_msg=request,
+                request_msg=request if settings.ERROR_LOG_RECORD_REQUEST_BODY else None,
             )
             raise e
         finally:
@@ -135,15 +132,11 @@ class OpenAICompatiableService:
             except Exception as e:
                 retries += 1
                 is_success = False
-                error_log_msg = str(e)
+                status_code = e.args[0]
+                error_log_msg = e.args[1]
                 logger.warning(
                     f"Streaming API call failed with error: {error_log_msg}. Attempt {retries} of {max_retries}"
                 )
-                match = re.search(r"status code (\d+)", error_log_msg)
-                if match:
-                    status_code = int(match.group(1))
-                else:
-                    status_code = 500
 
                 await add_error_log(
                     gemini_key=current_attempt_key,
@@ -151,7 +144,10 @@ class OpenAICompatiableService:
                     error_type="openai-compatiable-stream",
                     error_log=error_log_msg,
                     error_code=status_code,
-                    request_msg=payload,
+                    request_msg=(
+                        payload if settings.ERROR_LOG_RECORD_REQUEST_BODY else None
+                    ),
+                    request_datetime=request_datetime,
                 )
 
                 if self.key_manager:
@@ -159,19 +155,21 @@ class OpenAICompatiableService:
                         current_attempt_key, retries
                     )
                     if api_key:
-                        logger.info(f"Switched to new API key: {api_key}")
+                        logger.info(
+                            f"Switched to new API key: {redact_key_for_logging(api_key)}"
+                        )
                     else:
                         logger.error(
                             f"No valid API key available after {retries} retries."
                         )
-                        break 
+                        raise
                 else:
                     logger.error("KeyManager not available for retry logic.")
-                    break 
+                    break
 
                 if retries >= max_retries:
                     logger.error(f"Max retries ({max_retries}) reached for streaming.")
-                    break
+                    raise
             finally:
                 end_time = time.perf_counter()
                 latency_ms = int((end_time - start_time) * 1000)
@@ -183,8 +181,3 @@ class OpenAICompatiableService:
                     latency_ms=latency_ms,
                     request_time=request_datetime,
                 )
-                if not is_success and retries >= max_retries:
-                    yield f"data: {json.dumps({'error': 'Streaming failed after retries'})}\n\n"
-                    yield "data: [DONE]\n\n"
-                    
-    

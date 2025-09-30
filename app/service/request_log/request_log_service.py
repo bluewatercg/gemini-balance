@@ -2,12 +2,12 @@
 Service for request log operations.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from sqlalchemy import delete
 
-from app.database.connection import database
 from app.config.config import settings
+from app.database.connection import database
 from app.database.models import RequestLog
 from app.log.logger import get_request_log_logger
 
@@ -30,7 +30,7 @@ async def delete_old_request_logs_task():
     )
 
     try:
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_to_keep)
+        cutoff_date = datetime.now() - timedelta(days=days_to_keep)
 
         query = delete(RequestLog).where(RequestLog.request_time < cutoff_date)
 
@@ -40,7 +40,7 @@ async def delete_old_request_logs_task():
 
         result = await database.execute(query)
         logger.info(
-            f"Request logs older than {cutoff_date} potentially deleted. Rows affected: {result.rowcount if result else 'N/A'}"
+            f"Request logs older than {cutoff_date} potentially deleted. Rows affected: {result}"
         )
 
     except Exception as e:

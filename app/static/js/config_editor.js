@@ -5,13 +5,23 @@ const ARRAY_INPUT_CLASS = "array-input";
 const MAP_ITEM_CLASS = "map-item";
 const MAP_KEY_INPUT_CLASS = "map-key-input";
 const MAP_VALUE_INPUT_CLASS = "map-value-input";
+const CUSTOM_HEADER_ITEM_CLASS = "custom-header-item";
+const CUSTOM_HEADER_KEY_INPUT_CLASS = "custom-header-key-input";
+const CUSTOM_HEADER_VALUE_INPUT_CLASS = "custom-header-value-input";
 const SAFETY_SETTING_ITEM_CLASS = "safety-setting-item";
 const SHOW_CLASS = "show"; // For modals
 const API_KEY_REGEX = /AIzaSy\S{33}/g;
 const PROXY_REGEX =
   /(?:https?|socks5):\/\/(?:[^:@\/]+(?::[^@\/]+)?@)?(?:[^:\/\s]+)(?::\d+)?/g;
-const VERTEX_API_KEY_REGEX = /AQ\.[a-zA-Z0-9_]{50}/g; // 新增 Vertex API Key 正则
+const VERTEX_API_KEY_REGEX = /AQ\.[a-zA-Z0-9_\-]{50}/g; // 新增 Vertex Express API Key 正则
 const MASKED_VALUE = "••••••••";
+
+// API Keys Pagination Constants
+const API_KEYS_PER_PAGE = 20; // 每页显示的API密钥数量
+let currentApiKeyPage = 1;
+let totalApiKeyPages = 1;
+let allApiKeys = []; // 存储所有API密钥数据
+let filteredApiKeys = []; // 存储过滤后的API密钥数据
 
 // DOM Elements - Global Scope for frequently accessed elements
 const safetySettingsContainer = document.getElementById(
@@ -32,7 +42,7 @@ const bulkDeleteProxyInput = document.getElementById("bulkDeleteProxyInput");
 const resetConfirmModal = document.getElementById("resetConfirmModal");
 const configForm = document.getElementById("configForm"); // Added for frequent use
 
-// Vertex API Key Modal Elements
+// Vertex Express API Key Modal Elements
 const vertexApiKeyModal = document.getElementById("vertexApiKeyModal");
 const vertexApiKeyBulkInput = document.getElementById("vertexApiKeyBulkInput");
 const bulkDeleteVertexApiKeyModal = document.getElementById(
@@ -94,6 +104,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // 检查间隔小时数输入控制
+  const checkIntervalInput = document.getElementById("CHECK_INTERVAL_HOURS");
+  if (checkIntervalInput) {
+    checkIntervalInput.addEventListener("input", function () {
+      let value = parseFloat(this.value);
+      if (isNaN(value) || value < 0) {
+        this.value = 0;
+      }
+    });
+    
+    checkIntervalInput.addEventListener("change", function () {
+      let value = parseFloat(this.value);
+      if (isNaN(value) || value < 0) {
+        this.value = 0;
+      }
+    });
+  }
+
   // Toggle switch events
   const toggleSwitches = document.querySelectorAll(".toggle-switch");
   toggleSwitches.forEach((toggleSwitch) => {
@@ -144,6 +172,17 @@ document.addEventListener("DOMContentLoaded", function () {
   if (apiKeySearchInput)
     apiKeySearchInput.addEventListener("input", handleApiKeySearch);
 
+  // API Key Pagination Event Listeners
+  const apiKeyPrevBtn = document.getElementById("apiKeyPrevBtn");
+  const apiKeyNextBtn = document.getElementById("apiKeyNextBtn");
+  
+  if (apiKeyPrevBtn) {
+    apiKeyPrevBtn.addEventListener("click", prevApiKeyPage);
+  }
+  if (apiKeyNextBtn) {
+    apiKeyNextBtn.addEventListener("click", nextApiKeyPage);
+  }
+
   // Bulk Delete API Key Modal Elements and Events
   const bulkDeleteApiKeyBtn = document.getElementById("bulkDeleteApiKeyBtn");
   const closeBulkDeleteModalBtn = document.getElementById(
@@ -181,11 +220,37 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeProxyModalBtn = document.getElementById("closeProxyModalBtn");
   const cancelAddProxyBtn = document.getElementById("cancelAddProxyBtn");
   const confirmAddProxyBtn = document.getElementById("confirmAddProxyBtn");
+  
+  // Proxy Check Elements and Events
+  const checkAllProxiesBtn = document.getElementById("checkAllProxiesBtn");
+  const proxyCheckModal = document.getElementById("proxyCheckModal");
+  const closeProxyCheckModalBtn = document.getElementById("closeProxyCheckModalBtn");
+  const closeProxyCheckBtn = document.getElementById("closeProxyCheckBtn");
+  const retryFailedProxiesBtn = document.getElementById("retryFailedProxiesBtn");
 
   if (addProxyBtn) {
     addProxyBtn.addEventListener("click", () => {
       openModal(proxyModal);
       if (proxyBulkInput) proxyBulkInput.value = "";
+    });
+  }
+  
+  if (checkAllProxiesBtn) {
+    checkAllProxiesBtn.addEventListener("click", checkAllProxies);
+  }
+  
+  if (closeProxyCheckModalBtn) {
+    closeProxyCheckModalBtn.addEventListener("click", () => closeModal(proxyCheckModal));
+  }
+  
+  if (closeProxyCheckBtn) {
+    closeProxyCheckBtn.addEventListener("click", () => closeModal(proxyCheckModal));
+  }
+  
+  if (retryFailedProxiesBtn) {
+    retryFailedProxiesBtn.addEventListener("click", () => {
+      // 重试失败的代理检测
+      checkAllProxies();
     });
   }
   if (closeProxyModalBtn)
@@ -383,9 +448,15 @@ document.addEventListener("DOMContentLoaded", function () {
     addSafetySettingBtn.addEventListener("click", () => addSafetySettingItem());
   }
 
+  // Add Custom Header button
+  const addCustomHeaderBtn = document.getElementById("addCustomHeaderBtn");
+  if (addCustomHeaderBtn) {
+    addCustomHeaderBtn.addEventListener("click", () => addCustomHeaderItem());
+  }
+
   initializeSensitiveFields(); // Initialize sensitive field handling
 
-  // Vertex API Key Modal Elements and Events
+  // Vertex Express API Key Modal Elements and Events
   const addVertexApiKeyBtn = document.getElementById("addVertexApiKeyBtn");
   const closeVertexApiKeyModalBtn = document.getElementById(
     "closeVertexApiKeyModalBtn"
@@ -691,18 +762,36 @@ async function initConfig() {
     ) {
       config.THINKING_BUDGET_MAP = {}; // 默认为空对象
     }
+    // --- 新增：处理 CUSTOM_HEADERS 默认值 ---
+    if (
+      !config.CUSTOM_HEADERS ||
+      typeof config.CUSTOM_HEADERS !== "object" ||
+      config.CUSTOM_HEADERS === null
+    ) {
+      config.CUSTOM_HEADERS = {}; // 默认为空对象
+    }
     // --- 新增：处理 SAFETY_SETTINGS 默认值 ---
     if (!config.SAFETY_SETTINGS || !Array.isArray(config.SAFETY_SETTINGS)) {
       config.SAFETY_SETTINGS = []; // 默认为空数组
     }
     // --- 结束：处理 SAFETY_SETTINGS 默认值 ---
-
+    if (typeof config.URL_CONTEXT_ENABLED === "undefined") {
+      config.URL_CONTEXT_ENABLED = true;
+    }
+    if (!config.URL_CONTEXT_MODELS || !Array.isArray(config.URL_CONTEXT_MODELS)) {
+      config.URL_CONTEXT_MODELS = [];
+    }
+ 
     // --- 新增：处理自动删除错误日志配置的默认值 ---
     if (typeof config.AUTO_DELETE_ERROR_LOGS_ENABLED === "undefined") {
       config.AUTO_DELETE_ERROR_LOGS_ENABLED = false;
     }
     if (typeof config.AUTO_DELETE_ERROR_LOGS_DAYS === "undefined") {
       config.AUTO_DELETE_ERROR_LOGS_DAYS = 7;
+    }
+    // 错误日志是否记录请求体（默认不记录）
+    if (typeof config.ERROR_LOG_RECORD_REQUEST_BODY === "undefined") {
+      config.ERROR_LOG_RECORD_REQUEST_BODY = false;
     }
     // --- 结束：处理自动删除错误日志配置的默认值 ---
 
@@ -756,6 +845,7 @@ async function initConfig() {
       VERTEX_EXPRESS_BASE_URL: "", // 确保默认值存在
       THINKING_MODELS: [],
       THINKING_BUDGET_MAP: {},
+      CUSTOM_HEADERS: {},
       AUTO_DELETE_ERROR_LOGS_ENABLED: false,
       AUTO_DELETE_ERROR_LOGS_DAYS: 7, // 新增默认值
       AUTO_DELETE_REQUEST_LOGS_ENABLED: false, // 新增默认值
@@ -854,9 +944,29 @@ function populateForm(config) {
       '<div class="text-gray-500 text-sm italic">请在上方添加思考模型，预算将自动关联。</div>';
   }
 
-  // 4. Populate other array fields (excluding THINKING_MODELS)
+  // Populate CUSTOM_HEADERS
+  const customHeadersContainer = document.getElementById(
+    "CUSTOM_HEADERS_container"
+  );
+  let customHeadersAdded = false;
+  if (
+    customHeadersContainer &&
+    config.CUSTOM_HEADERS &&
+    typeof config.CUSTOM_HEADERS === "object"
+  ) {
+    for (const [key, value] of Object.entries(config.CUSTOM_HEADERS)) {
+      createAndAppendCustomHeaderItem(key, value);
+      customHeadersAdded = true;
+    }
+  }
+  if (!customHeadersAdded && customHeadersContainer) {
+    customHeadersContainer.innerHTML =
+      '<div class="text-gray-500 text-sm italic">添加自定义请求头，例如 X-Api-Key: your-key</div>';
+  }
+
+  // 4. Populate other array fields (excluding THINKING_MODELS and API_KEYS)
   for (const [key, value] of Object.entries(config)) {
-    if (Array.isArray(value) && key !== "THINKING_MODELS") {
+    if (Array.isArray(value) && key !== "THINKING_MODELS" && key !== "API_KEYS") {
       const container = document.getElementById(`${key}_container`);
       if (container) {
         value.forEach((itemValue) => {
@@ -868,6 +978,17 @@ function populateForm(config) {
         });
       }
     }
+  }
+
+  // 4.1. 特殊处理API_KEYS - 使用分页
+  if (Array.isArray(config.API_KEYS)) {
+    allApiKeys = config.API_KEYS.filter(key =>
+      typeof key === "string" && key.trim() !== ""
+    );
+    filteredApiKeys = [...allApiKeys];
+    currentApiKeyPage = 1;
+    renderApiKeyPage();
+    updateApiKeyPagination();
   }
 
   // 5. Populate non-array/non-budget fields
@@ -992,44 +1113,31 @@ function populateForm(config) {
  * Handles the bulk addition of API keys from the modal input.
  */
 function handleBulkAddApiKeys() {
-  const apiKeyContainer = document.getElementById("API_KEYS_container");
-  if (!apiKeyBulkInput || !apiKeyContainer || !apiKeyModal) return;
+  if (!apiKeyBulkInput || !apiKeyModal) return;
 
   const bulkText = apiKeyBulkInput.value;
   const extractedKeys = bulkText.match(API_KEY_REGEX) || [];
 
-  const currentKeyInputs = apiKeyContainer.querySelectorAll(
-    `.${ARRAY_INPUT_CLASS}.${SENSITIVE_INPUT_CLASS}`
-  );
-  let currentKeys = Array.from(currentKeyInputs)
-    .map((input) => {
-      return input.hasAttribute("data-real-value")
-        ? input.getAttribute("data-real-value")
-        : input.value;
-    })
-    .filter((key) => key && key.trim() !== "" && key !== MASKED_VALUE);
-
-  const combinedKeys = new Set([...currentKeys, ...extractedKeys]);
+  // 合并现有密钥和新密钥，去重
+  const combinedKeys = new Set([...allApiKeys, ...extractedKeys]);
   const uniqueKeys = Array.from(combinedKeys);
 
-  apiKeyContainer.innerHTML = ""; // Clear existing items more directly
+  // 更新全局密钥数组
+  allApiKeys = uniqueKeys;
+  
+  // 更新过滤后的数组
+  const searchTerm = apiKeySearchInput ? apiKeySearchInput.value.toLowerCase() : "";
+  if (!searchTerm) {
+    filteredApiKeys = [...allApiKeys];
+  } else {
+    filteredApiKeys = allApiKeys.filter(key =>
+      key.toLowerCase().includes(searchTerm)
+    );
+  }
 
-  uniqueKeys.forEach((key) => {
-    addArrayItemWithValue("API_KEYS", key);
-  });
-
-  const newKeyInputs = apiKeyContainer.querySelectorAll(
-    `.${ARRAY_INPUT_CLASS}.${SENSITIVE_INPUT_CLASS}`
-  );
-  newKeyInputs.forEach((input) => {
-    if (configForm && typeof initializeSensitiveFields === "function") {
-      const focusoutEvent = new Event("focusout", {
-        bubbles: true,
-        cancelable: true,
-      });
-      input.dispatchEvent(focusoutEvent);
-    }
-  });
+  // 重新渲染当前页
+  renderApiKeyPage();
+  updateApiKeyPagination();
 
   closeModal(apiKeyModal);
   showNotification(`添加/更新了 ${uniqueKeys.length} 个唯一密钥`, "success");
@@ -1039,32 +1147,139 @@ function handleBulkAddApiKeys() {
  * Handles searching/filtering of API keys in the list.
  */
 function handleApiKeySearch() {
-  const apiKeyContainer = document.getElementById("API_KEYS_container");
-  if (!apiKeySearchInput || !apiKeyContainer) return;
+  if (!apiKeySearchInput) return;
 
   const searchTerm = apiKeySearchInput.value.toLowerCase();
-  const keyItems = apiKeyContainer.querySelectorAll(`.${ARRAY_ITEM_CLASS}`);
-
-  keyItems.forEach((item) => {
-    const input = item.querySelector(
-      `.${ARRAY_INPUT_CLASS}.${SENSITIVE_INPUT_CLASS}`
+  
+  // 过滤API密钥
+  if (!searchTerm) {
+    filteredApiKeys = [...allApiKeys];
+  } else {
+    filteredApiKeys = allApiKeys.filter(key =>
+      key.toLowerCase().includes(searchTerm)
     );
-    if (input) {
-      const realValue = input.hasAttribute("data-real-value")
-        ? input.getAttribute("data-real-value").toLowerCase()
-        : input.value.toLowerCase();
-      item.style.display = realValue.includes(searchTerm) ? "flex" : "none";
-    }
+  }
+
+  // 重置到第一页
+  currentApiKeyPage = 1;
+  
+  // 重新渲染当前页
+  renderApiKeyPage();
+  updateApiKeyPagination();
+}
+
+/**
+ * 渲染当前页的API密钥
+ */
+function renderApiKeyPage() {
+  const apiKeyContainer = document.getElementById("API_KEYS_container");
+  if (!apiKeyContainer) return;
+
+  // 清空容器
+  apiKeyContainer.innerHTML = "";
+
+  // 计算当前页的数据范围
+  const startIndex = (currentApiKeyPage - 1) * API_KEYS_PER_PAGE;
+  const endIndex = Math.min(startIndex + API_KEYS_PER_PAGE, filteredApiKeys.length);
+  const pageKeys = filteredApiKeys.slice(startIndex, endIndex);
+
+  // 渲染当前页的密钥
+  pageKeys.forEach((key) => {
+    addArrayItemWithValue("API_KEYS", key);
   });
+
+  // 如果没有密钥，显示提示信息
+  if (pageKeys.length === 0) {
+    const emptyMessage = document.createElement("div");
+    emptyMessage.className = "text-gray-500 text-sm italic text-center py-4";
+    emptyMessage.textContent = filteredApiKeys.length === 0 ?
+      (allApiKeys.length === 0 ? "暂无API密钥" : "未找到匹配的密钥") :
+      "当前页无数据";
+    apiKeyContainer.appendChild(emptyMessage);
+  }
+}
+
+/**
+ * 更新分页控件
+ */
+function updateApiKeyPagination() {
+  totalApiKeyPages = Math.max(1, Math.ceil(filteredApiKeys.length / API_KEYS_PER_PAGE));
+  
+  // 确保当前页在有效范围内
+  if (currentApiKeyPage > totalApiKeyPages) {
+    currentApiKeyPage = totalApiKeyPages;
+  }
+
+  const paginationContainer = document.getElementById("apiKeyPagination");
+  if (!paginationContainer) return;
+
+  // 如果只有一页或没有数据，隐藏分页控件
+  if (totalApiKeyPages <= 1) {
+    paginationContainer.style.display = "none";
+    return;
+  }
+
+  paginationContainer.style.display = "flex";
+
+  // 更新页码信息
+  const pageInfo = document.getElementById("apiKeyPageInfo");
+  if (pageInfo) {
+    pageInfo.textContent = `第 ${currentApiKeyPage} 页，共 ${totalApiKeyPages} 页 (${filteredApiKeys.length} 个密钥)`;
+  }
+
+  // 更新按钮状态
+  const prevBtn = document.getElementById("apiKeyPrevBtn");
+  const nextBtn = document.getElementById("apiKeyNextBtn");
+  
+  if (prevBtn) {
+    prevBtn.disabled = currentApiKeyPage <= 1;
+    prevBtn.className = currentApiKeyPage <= 1 ?
+      "px-3 py-1 rounded bg-gray-300 text-gray-500 cursor-not-allowed" :
+      "px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer";
+  }
+  
+  if (nextBtn) {
+    nextBtn.disabled = currentApiKeyPage >= totalApiKeyPages;
+    nextBtn.className = currentApiKeyPage >= totalApiKeyPages ?
+      "px-3 py-1 rounded bg-gray-300 text-gray-500 cursor-not-allowed" :
+      "px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer";
+  }
+}
+
+/**
+ * 跳转到指定页
+ */
+function goToApiKeyPage(page) {
+  if (page < 1 || page > totalApiKeyPages) return;
+  
+  currentApiKeyPage = page;
+  renderApiKeyPage();
+  updateApiKeyPagination();
+}
+
+/**
+ * 上一页
+ */
+function prevApiKeyPage() {
+  if (currentApiKeyPage > 1) {
+    goToApiKeyPage(currentApiKeyPage - 1);
+  }
+}
+
+/**
+ * 下一页
+ */
+function nextApiKeyPage() {
+  if (currentApiKeyPage < totalApiKeyPages) {
+    goToApiKeyPage(currentApiKeyPage + 1);
+  }
 }
 
 /**
  * Handles the bulk deletion of API keys based on input from the modal.
  */
 function handleBulkDeleteApiKeys() {
-  const apiKeyContainer = document.getElementById("API_KEYS_container");
-  if (!bulkDeleteApiKeyInput || !apiKeyContainer || !bulkDeleteApiKeyModal)
-    return;
+  if (!bulkDeleteApiKeyInput || !bulkDeleteApiKeyModal) return;
 
   const bulkText = bulkDeleteApiKeyInput.value;
   if (!bulkText.trim()) {
@@ -1079,23 +1294,29 @@ function handleBulkDeleteApiKeys() {
     return;
   }
 
-  const keyItems = apiKeyContainer.querySelectorAll(`.${ARRAY_ITEM_CLASS}`);
+  // 从allApiKeys数组中删除匹配的密钥
   let deleteCount = 0;
-
-  keyItems.forEach((item) => {
-    const input = item.querySelector(
-      `.${ARRAY_INPUT_CLASS}.${SENSITIVE_INPUT_CLASS}`
-    );
-    const realValue =
-      input &&
-      (input.hasAttribute("data-real-value")
-        ? input.getAttribute("data-real-value")
-        : input.value);
-    if (realValue && keysToDelete.has(realValue)) {
-      item.remove();
+  allApiKeys = allApiKeys.filter(key => {
+    if (keysToDelete.has(key)) {
       deleteCount++;
+      return false;
     }
+    return true;
   });
+
+  // 更新过滤后的数组
+  const searchTerm = apiKeySearchInput ? apiKeySearchInput.value.toLowerCase() : "";
+  if (!searchTerm) {
+    filteredApiKeys = [...allApiKeys];
+  } else {
+    filteredApiKeys = allApiKeys.filter(key =>
+      key.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // 重新渲染当前页
+  renderApiKeyPage();
+  updateApiKeyPagination();
 
   closeModal(bulkDeleteApiKeyModal);
 
@@ -1179,17 +1400,13 @@ function handleBulkDeleteProxies() {
 }
 
 /**
- * Handles the bulk addition of Vertex API keys from the modal input.
+ * Handles the bulk addition of Vertex Express API keys from the modal input.
  */
 function handleBulkAddVertexApiKeys() {
   const vertexApiKeyContainer = document.getElementById(
     "VERTEX_API_KEYS_container"
   );
-  if (
-    !vertexApiKeyBulkInput ||
-    !vertexApiKeyContainer ||
-    !vertexApiKeyModal
-  ) {
+  if (!vertexApiKeyBulkInput || !vertexApiKeyContainer || !vertexApiKeyModal) {
     return;
   }
 
@@ -1239,7 +1456,7 @@ function handleBulkAddVertexApiKeys() {
 }
 
 /**
- * Handles the bulk deletion of Vertex API keys based on input from the modal.
+ * Handles the bulk deletion of Vertex Express API keys based on input from the modal.
  */
 function handleBulkDeleteVertexApiKeys() {
   const vertexApiKeyContainer = document.getElementById(
@@ -1255,7 +1472,7 @@ function handleBulkDeleteVertexApiKeys() {
 
   const bulkText = bulkDeleteVertexApiKeyInput.value;
   if (!bulkText.trim()) {
-    showNotification("请粘贴需要删除的 Vertex API 密钥", "warning");
+    showNotification("请粘贴需要删除的 Vertex Express API 密钥", "warning");
     return;
   }
 
@@ -1263,13 +1480,15 @@ function handleBulkDeleteVertexApiKeys() {
 
   if (keysToDelete.size === 0) {
     showNotification(
-      "未在输入内容中提取到有效的 Vertex API 密钥格式",
+      "未在输入内容中提取到有效的 Vertex Express API 密钥格式",
       "warning"
     );
     return;
   }
 
-  const keyItems = vertexApiKeyContainer.querySelectorAll(`.${ARRAY_ITEM_CLASS}`);
+  const keyItems = vertexApiKeyContainer.querySelectorAll(
+    `.${ARRAY_ITEM_CLASS}`
+  );
   let deleteCount = 0;
 
   keyItems.forEach((item) => {
@@ -1290,7 +1509,10 @@ function handleBulkDeleteVertexApiKeys() {
   closeModal(bulkDeleteVertexApiKeyModal);
 
   if (deleteCount > 0) {
-    showNotification(`成功删除了 ${deleteCount} 个匹配的 Vertex 密钥`, "success");
+    showNotification(
+      `成功删除了 ${deleteCount} 个匹配的 Vertex 密钥`,
+      "success"
+    );
   } else {
     showNotification("列表中未找到您输入的任何 Vertex 密钥进行删除", "info");
   }
@@ -1305,8 +1527,10 @@ function switchTab(tabId) {
   console.log(`Switching to tab: ${tabId}`);
 
   // 定义选中态和未选中态的样式
-  const activeStyle = "background-color: #3b82f6 !important; color: #ffffff !important; border: 2px solid #2563eb !important; box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4), 0 2px 6px -1px rgba(59, 130, 246, 0.2) !important; transform: translateY(-2px) !important; font-weight: 600 !important;";
-  const inactiveStyle = "background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important; transform: none !important;";
+  const activeStyle =
+    "background-color: #3b82f6 !important; color: #ffffff !important; border: 2px solid #2563eb !important; box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4), 0 2px 6px -1px rgba(59, 130, 246, 0.2) !important; transform: translateY(-2px) !important; font-weight: 600 !important;";
+  const inactiveStyle =
+    "background-color: #f8fafc !important; color: #64748b !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important; font-weight: 500 !important; transform: none !important;";
 
   // 更新标签按钮状态
   const tabButtons = document.querySelectorAll(".tab-btn");
@@ -1409,6 +1633,45 @@ function createRemoveButton() {
 }
 
 /**
+ * Creates a proxy status icon for displaying proxy check status.
+ * @returns {HTMLSpanElement} The status icon element.
+ */
+function createProxyStatusIcon() {
+  const statusIcon = document.createElement("span");
+  statusIcon.className = "proxy-status-icon px-2 py-2 text-gray-400";
+  statusIcon.innerHTML = '<i class="fas fa-question-circle" title="未检测"></i>';
+  statusIcon.setAttribute("data-status", "unknown");
+  return statusIcon;
+}
+
+/**
+ * Creates a proxy check button for individual proxy checking.
+ * @returns {HTMLButtonElement} The check button element.
+ */
+function createProxyCheckButton() {
+  const checkBtn = document.createElement("button");
+  checkBtn.type = "button";
+  checkBtn.className =
+    "proxy-check-btn px-2 py-2 text-blue-500 hover:text-blue-700 focus:outline-none transition-colors duration-150 rounded-r-md";
+  checkBtn.innerHTML = '<i class="fas fa-globe"></i>';
+  checkBtn.title = "检测此代理";
+  
+  // 添加点击事件监听器
+  checkBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const inputElement = this.closest('.flex').querySelector('.array-input');
+    if (inputElement && inputElement.value.trim()) {
+      checkSingleProxy(inputElement.value.trim(), this);
+    } else {
+      showNotification("请先输入代理地址", "warning");
+    }
+  });
+  
+  return checkBtn;
+}
+
+/**
  * Adds a new item to an array configuration section (e.g., API_KEYS, ALLOWED_TOKENS).
  * This function is typically called by a "+" button.
  * @param {string} key - The configuration key for the array (e.g., 'API_KEYS').
@@ -1421,7 +1684,7 @@ function addArrayItem(key) {
   const modelId = addArrayItemWithValue(key, newItemValue); // This adds the DOM element
 
   if (key === "THINKING_MODELS" && modelId) {
-    createAndAppendBudgetMapItem(newItemValue, 0, modelId); // Default budget 0
+    createAndAppendBudgetMapItem(newItemValue, -1, modelId); // Default budget -1
   }
 }
 
@@ -1439,8 +1702,8 @@ function addArrayItemWithValue(key, value) {
   const isThinkingModel = key === "THINKING_MODELS";
   const isAllowedToken = key === "ALLOWED_TOKENS";
   const isVertexApiKey = key === "VERTEX_API_KEYS"; // 新增判断
-  const isSensitive =
-    key === "API_KEYS" || isAllowedToken || isVertexApiKey; // 更新敏感判断
+  const isProxy = key === "PROXIES"; // 新增代理判断
+  const isSensitive = key === "API_KEYS" || isAllowedToken || isVertexApiKey; // 更新敏感判断
   const modelId = isThinkingModel ? generateUUID() : null;
 
   const arrayItem = document.createElement("div");
@@ -1467,6 +1730,13 @@ function addArrayItemWithValue(key, value) {
   if (isAllowedToken) {
     const generateBtn = createGenerateTokenButton();
     inputWrapper.appendChild(generateBtn);
+  } else if (isProxy) {
+    // 为代理添加状态显示和检测按钮
+    const proxyStatusIcon = createProxyStatusIcon();
+    inputWrapper.appendChild(proxyStatusIcon);
+    
+    const proxyCheckBtn = createProxyCheckButton();
+    inputWrapper.appendChild(proxyCheckBtn);
   } else {
     // Ensure right-side rounding if no button is present
     input.classList.add("rounded-r-md");
@@ -1532,7 +1802,7 @@ function createAndAppendBudgetMapItem(mapKey, mapValue, modelId) {
   const valueInput = document.createElement("input");
   valueInput.type = "number";
   const intValue = parseInt(mapValue, 10);
-  valueInput.value = isNaN(intValue) ? 0 : intValue;
+  valueInput.value = isNaN(intValue) ? -1 : intValue;
   valueInput.placeholder = "预算 (整数)";
   valueInput.className = `${MAP_VALUE_INPUT_CLASS} w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50`;
   valueInput.min = -1;
@@ -1560,6 +1830,67 @@ function createAndAppendBudgetMapItem(mapKey, mapValue, modelId) {
   // mapItem.appendChild(removeBtn); // Do not append the remove button
 
   container.appendChild(mapItem);
+}
+
+/**
+ * Adds a new custom header item to the DOM.
+ */
+function addCustomHeaderItem() {
+  createAndAppendCustomHeaderItem("", "");
+}
+
+/**
+ * Creates and appends a DOM element for a custom header.
+ * @param {string} key - The header key.
+ * @param {string} value - The header value.
+ */
+function createAndAppendCustomHeaderItem(key, value) {
+  const container = document.getElementById("CUSTOM_HEADERS_container");
+  if (!container) {
+    console.error(
+      "Cannot add custom header: CUSTOM_HEADERS_container not found!"
+    );
+    return;
+  }
+
+  const placeholder = container.querySelector(".text-gray-500.italic");
+  if (
+    placeholder &&
+    container.children.length === 1 &&
+    container.firstChild === placeholder
+  ) {
+    container.innerHTML = "";
+  }
+
+  const headerItem = document.createElement("div");
+  headerItem.className = `${CUSTOM_HEADER_ITEM_CLASS} flex items-center mb-2 gap-2`;
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.value = key;
+  keyInput.placeholder = "Header Name";
+  keyInput.className = `${CUSTOM_HEADER_KEY_INPUT_CLASS} flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 text-gray-500`;
+
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.value = value;
+  valueInput.placeholder = "Header Value";
+  valueInput.className = `${CUSTOM_HEADER_VALUE_INPUT_CLASS} flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50`;
+
+  const removeBtn = createRemoveButton();
+  removeBtn.addEventListener("click", () => {
+    headerItem.remove();
+    if (container.children.length === 0) {
+      container.innerHTML =
+        '<div class="text-gray-500 text-sm italic">添加自定义请求头，例如 X-Api-Key: your-key</div>';
+    }
+  });
+
+  headerItem.appendChild(keyInput);
+  headerItem.appendChild(valueInput);
+  headerItem.appendChild(removeBtn);
+
+  container.appendChild(headerItem);
 }
 
 /**
@@ -1602,6 +1933,15 @@ function collectFormData() {
   const arrayContainers = document.querySelectorAll(".array-container");
   arrayContainers.forEach((container) => {
     const key = container.id.replace("_container", "");
+    
+    // 特殊处理API_KEYS - 使用全局数组而不是DOM元素
+    if (key === "API_KEYS") {
+      formData[key] = allApiKeys.filter(
+        (value) => value && value.trim() !== "" && value !== MASKED_VALUE
+      );
+      return;
+    }
+    
     const arrayInputs = container.querySelectorAll(`.${ARRAY_INPUT_CLASS}`);
     formData[key] = Array.from(arrayInputs)
       .map((input) => {
@@ -1632,8 +1972,28 @@ function collectFormData() {
         formData["THINKING_BUDGET_MAP"][keyInput.value.trim()] = isNaN(
           budgetValue
         )
-          ? 0
+          ? -1
           : budgetValue;
+      }
+    });
+  }
+
+  const customHeadersContainer = document.getElementById(
+    "CUSTOM_HEADERS_container"
+  );
+  if (customHeadersContainer) {
+    formData["CUSTOM_HEADERS"] = {};
+    const customHeaderItems = customHeadersContainer.querySelectorAll(
+      `.${CUSTOM_HEADER_ITEM_CLASS}`
+    );
+    customHeaderItems.forEach((item) => {
+      const keyInput = item.querySelector(`.${CUSTOM_HEADER_KEY_INPUT_CLASS}`);
+      const valueInput = item.querySelector(
+        `.${CUSTOM_HEADER_VALUE_INPUT_CLASS}`
+      );
+      if (keyInput && valueInput && keyInput.value.trim() !== "") {
+        formData["CUSTOM_HEADERS"][keyInput.value.trim()] =
+          valueInput.value.trim();
       }
     });
   }
@@ -2163,7 +2523,7 @@ function handleModelSelection(selectedModelId) {
     );
     if (currentModelHelperTarget.targetKey === "THINKING_MODELS" && modelId) {
       // Automatically add corresponding budget map item with default budget 0
-      createAndAppendBudgetMapItem(selectedModelId, 0, modelId);
+      createAndAppendBudgetMapItem(selectedModelId, -1, modelId);
     }
   }
 
@@ -2172,3 +2532,241 @@ function handleModelSelection(selectedModelId) {
 }
 
 // -- End Model Helper Functions --
+
+// -- Proxy Check Functions --
+
+/**
+ * 检测单个代理是否可用
+ * @param {string} proxy - 代理地址
+ * @param {HTMLElement} buttonElement - 触发检测的按钮元素
+ */
+async function checkSingleProxy(proxy, buttonElement) {
+  const statusIcon = buttonElement.parentElement.querySelector('.proxy-status-icon');
+  const originalButtonContent = buttonElement.innerHTML;
+  
+  try {
+    // 更新UI状态为检测中
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    buttonElement.disabled = true;
+    if (statusIcon) {
+      statusIcon.className = "proxy-status-icon px-2 py-2 text-blue-500";
+      statusIcon.innerHTML = '<i class="fas fa-spinner fa-spin" title="检测中..."></i>';
+      statusIcon.setAttribute("data-status", "checking");
+    }
+    
+    const response = await fetch('/api/config/proxy/check', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        proxy: proxy,
+        use_cache: true
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`检测请求失败: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    updateProxyStatus(statusIcon, result);
+    
+    // 显示检测结果通知
+    if (result.is_available) {
+      showNotification(`代理可用 (${result.response_time}s)`, "success");
+    } else {
+      showNotification(`代理不可用: ${result.error_message}`, "error");
+    }
+    
+  } catch (error) {
+    console.error('代理检测失败:', error);
+    if (statusIcon) {
+      statusIcon.className = "proxy-status-icon px-2 py-2 text-red-500";
+      statusIcon.innerHTML = '<i class="fas fa-times-circle" title="检测失败"></i>';
+      statusIcon.setAttribute("data-status", "error");
+    }
+    showNotification(`检测失败: ${error.message}`, "error");
+  } finally {
+    // 恢复按钮状态
+    buttonElement.innerHTML = originalButtonContent;
+    buttonElement.disabled = false;
+  }
+}
+
+/**
+ * 更新代理状态图标
+ * @param {HTMLElement} statusIcon - 状态图标元素
+ * @param {Object} result - 检测结果
+ */
+function updateProxyStatus(statusIcon, result) {
+  if (!statusIcon) return;
+  
+  if (result.is_available) {
+    statusIcon.className = "proxy-status-icon px-2 py-2 text-green-500";
+    statusIcon.innerHTML = `<i class="fas fa-check-circle" title="可用 (${result.response_time}s)"></i>`;
+    statusIcon.setAttribute("data-status", "available");
+  } else {
+    statusIcon.className = "proxy-status-icon px-2 py-2 text-red-500";
+    statusIcon.innerHTML = `<i class="fas fa-times-circle" title="不可用: ${result.error_message}"></i>`;
+    statusIcon.setAttribute("data-status", "unavailable");
+  }
+}
+
+/**
+ * 检测所有代理
+ */
+async function checkAllProxies() {
+  const proxyContainer = document.getElementById("PROXIES_container");
+  if (!proxyContainer) return;
+  
+  const proxyInputs = proxyContainer.querySelectorAll('.array-input');
+  const proxies = Array.from(proxyInputs)
+    .map(input => input.value.trim())
+    .filter(proxy => proxy.length > 0);
+  
+  if (proxies.length === 0) {
+    showNotification("没有代理需要检测", "warning");
+    return;
+  }
+  
+  // 打开检测结果模态框
+  const proxyCheckModal = document.getElementById("proxyCheckModal");
+  if (proxyCheckModal) {
+    openModal(proxyCheckModal);
+    
+    // 显示进度
+    const progressContainer = document.getElementById("proxyCheckProgress");
+    const summaryContainer = document.getElementById("proxyCheckSummary");
+    const resultsContainer = document.getElementById("proxyCheckResults");
+    
+    if (progressContainer) progressContainer.classList.remove("hidden");
+    if (summaryContainer) summaryContainer.classList.add("hidden");
+    if (resultsContainer) resultsContainer.innerHTML = "";
+    
+    // 更新总数
+    const totalCountElement = document.getElementById("totalCount");
+    if (totalCountElement) totalCountElement.textContent = proxies.length;
+    
+    try {
+      const response = await fetch('/api/config/proxy/check-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proxies: proxies,
+          use_cache: true,
+          max_concurrent: 5
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`批量检测请求失败: ${response.status}`);
+      }
+      
+      const results = await response.json();
+      displayProxyCheckResults(results);
+      updateProxyStatusInList(results);
+      
+    } catch (error) {
+      console.error('批量代理检测失败:', error);
+      showNotification(`批量检测失败: ${error.message}`, "error");
+      if (resultsContainer) {
+        resultsContainer.innerHTML = `<div class="text-red-500 text-center py-4">检测失败: ${error.message}</div>`;
+      }
+    } finally {
+      // 隐藏进度
+      if (progressContainer) progressContainer.classList.add("hidden");
+    }
+  }
+}
+
+/**
+ * 显示代理检测结果
+ * @param {Array} results - 检测结果数组
+ */
+function displayProxyCheckResults(results) {
+  const summaryContainer = document.getElementById("proxyCheckSummary");
+  const resultsContainer = document.getElementById("proxyCheckResults");
+  const availableCountElement = document.getElementById("availableCount");
+  const unavailableCountElement = document.getElementById("unavailableCount");
+  const retryButton = document.getElementById("retryFailedProxiesBtn");
+  
+  if (!resultsContainer) return;
+  
+  // 统计结果
+  const availableCount = results.filter(r => r.is_available).length;
+  const unavailableCount = results.length - availableCount;
+  
+  // 更新概览
+  if (availableCountElement) availableCountElement.textContent = availableCount;
+  if (unavailableCountElement) unavailableCountElement.textContent = unavailableCount;
+  if (summaryContainer) summaryContainer.classList.remove("hidden");
+  
+  // 显示重试按钮（如果有失败的代理）
+  if (retryButton) {
+    if (unavailableCount > 0) {
+      retryButton.classList.remove("hidden");
+    } else {
+      retryButton.classList.add("hidden");
+    }
+  }
+  
+  // 清空并填充结果
+  resultsContainer.innerHTML = "";
+  
+  results.forEach(result => {
+    const resultItem = document.createElement("div");
+    resultItem.className = `flex items-center justify-between p-3 border rounded-lg ${
+      result.is_available ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+    }`;
+    
+    const statusIcon = result.is_available ? 
+      '<i class="fas fa-check-circle text-green-500"></i>' : 
+      '<i class="fas fa-times-circle text-red-500"></i>';
+    
+    const responseTimeText = result.response_time ? 
+      ` (${result.response_time}s)` : '';
+    
+    const errorText = result.error_message ? 
+      `<span class="text-red-600 text-sm ml-2">${result.error_message}</span>` : '';
+    
+    resultItem.innerHTML = `
+      <div class="flex items-center gap-3">
+        ${statusIcon}
+        <span class="font-mono text-sm">${result.proxy}</span>
+        ${responseTimeText}
+      </div>
+      <div class="flex items-center">
+        <span class="text-sm ${result.is_available ? 'text-green-700' : 'text-red-700'}">
+          ${result.is_available ? '可用' : '不可用'}
+        </span>
+        ${errorText}
+      </div>
+    `;
+    
+    resultsContainer.appendChild(resultItem);
+  });
+}
+
+/**
+ * 根据检测结果更新代理列表中的状态图标
+ * @param {Array} results - 检测结果数组
+ */
+function updateProxyStatusInList(results) {
+  const proxyContainer = document.getElementById("PROXIES_container");
+  if (!proxyContainer) return;
+  
+  results.forEach(result => {
+    const proxyInputs = proxyContainer.querySelectorAll('.array-input');
+    proxyInputs.forEach(input => {
+      if (input.value.trim() === result.proxy) {
+        const statusIcon = input.parentElement.querySelector('.proxy-status-icon');
+        updateProxyStatus(statusIcon, result);
+      }
+    });
+  });
+}
+
+// -- End Proxy Check Functions --
